@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starship Pasolini VR - Open Day Liceo Scientifico Pasolini di Potenza</title>
+  <!-- Libreria A-Frame 1.6.0 per WebXR / VR e 3D su PC -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #03050a;
+      font-family: 'Rajdhani', sans-serif;
+      color: #e0f7ff;
+    }
+
+    /* Schermata iniziale / Overlay */
+    #start-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: radial-gradient(circle at center, #0c142c 0%, #03050a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      border: 2px solid #00f3ff;
+      box-shadow: inset 0 0 60px rgba(0, 243, 255, 0.25);
+    }
+
+    .neon-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      border: 1px solid #ff00ea;
+      border-radius: 999px;
+      color: #ff00ea;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      box-shadow: 0 0 15px rgba(255, 0, 234, 0.5);
+      margin-bottom: 16px;
+    }
+
+    h1.main-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.8rem, 4.5vw, 3.6rem);
+      font-weight: 900;
+      margin: 0 0 10px 0;
+      background: linear-gradient(90deg, #00f3ff, #ffffff, #ff00ea);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+      letter-spacing: 2px;
+    }
+
+    .subtitle {
+      font-size: clamp(1rem, 2vw, 1.35rem);
+      color: #a3d9ff;
+      max-width: 720px;
+      margin: 0 auto 28px auto;
+      line-height: 1.5;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 680px;
+      margin-bottom: 32px;
+    }
+
+    .control-card {
+      background: rgba(10, 20, 45, 0.75);
+      border: 1px solid rgba(0, 243, 255, 0.4);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+    }
+
+    .control-card h3 {
+      font-family: 'Orbitron', sans-serif;
+      margin: 0 0 8px 0;
+      font-size: 1rem;
+      color: #00f3ff;
+    }
+
+    .control-card.vr h3 {
+      color: #39ff14;
+    }
+
+    .control-card p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #cde8f6;
+      line-height: 1.4;
+    }
+
+    #btn-start {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      padding: 16px 42px;
+      color: #03050a;
+      background: linear-gradient(90deg, #00f3ff, #39ff14);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      box-shadow: 0 0 30px rgba(0, 243, 255, 0.7), 0 0 60px rgba(57, 255, 20, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #btn-start:hover {
+      transform: scale(1.06);
+      box-shadow: 0 0 40px rgba(0, 243, 255, 0.95), 0 0 80px rgba(57, 255, 20, 0.7);
+    }
+
+    /* HUD in sovrimpressione per schermo PC (visibile anche in Fullscreen) */
+    #pc-hud {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      z-index: 2147483640;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .hud-pill {
+      pointer-events: auto;
+      background: rgba(5, 12, 28, 0.85);
+      border: 1px solid #00f3ff;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      color: #00f3ff;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hud-btn {
+      background: rgba(255, 0, 234, 0.18);
+      border: 1px solid #ff00ea;
+      color: #ff00ea;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .hud-btn:hover {
+      background: #ff00ea;
+      color: #03050a;
+      box-shadow: 0 0 15px #ff00ea;
+    }
+
+    /* Mirino centrale per modalità PC */
+    #crosshair-hint {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      background: rgba(5, 12, 28, 0.88);
+      border: 1px solid rgba(0, 243, 255, 0.55);
+      border-radius: 999px;
+      padding: 8px 20px;
+      font-size: 0.92rem;
+      color: #a3d9ff;
+      pointer-events: none;
+      display: none;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.25);
+    }
+
+    /* MODALE QUIZ DESKTOP / TABLET (z-index massimo sopra al canvas A-Frame) */
+    #desktop-quiz-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background: rgba(2, 5, 14, 0.84);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      pointer-events: auto;
+    }
+
+    .quiz-card {
+      width: 100%;
+      max-width: 640px;
+      background: linear-gradient(145deg, #071028 0%, #030714 100%);
+      border: 2px solid #00f3ff;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 0 40px rgba(0, 243, 255, 0.45), inset 0 0 25px rgba(255, 0, 234, 0.15);
+      position: relative;
+      animation: modalPop 0.2s ease-out;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .quiz-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+
+    .quiz-module-tag {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ff00ea;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 10px rgba(255, 0, 234, 0.6);
+    }
+
+    .quiz-close-btn {
+      background: rgba(255, 0, 85, 0.2);
+      border: 1px solid #ff0055;
+      color: #ff4d88;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .quiz-close-btn:hover {
+      background: #ff0055;
+      color: #ffffff;
+      box-shadow: 0 0 15px #ff0055;
+    }
+
+    .quiz-question-text {
+      font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.45;
+      margin: 0 0 22px 0;
+    }
+
+    .quiz-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .desktop-opt-btn {
+      width: 100%;
+      text-align: left;
+      padding: 15px 20px;
+      background: rgba(11, 29, 58, 0.9);
+      border: 1.5px solid #00f3ff;
+      border-radius: 12px;
+      color: #e0f7ff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      box-shadow: 0 0 12px rgba(0, 243, 255, 0.15);
+    }
+
+    .desktop-opt-btn:hover {
+      background: rgba(0, 243, 255, 0.22);
+      transform: translateX(4px);
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+    }
+
+    .desktop-opt-btn.correct {
+      background: rgba(20, 92, 38, 0.95);
+      border-color: #39ff14;
+      color: #39ff14;
+      box-shadow: 0 0 25px rgba(57, 255, 20, 0.6);
+    }
+
+    .desktop-opt-btn.wrong {
+      background: rgba(92, 20, 40, 0.95);
+      border-color: #ff0055;
+      color: #ff99bb;
+      box-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
+    }
+
+    .quiz-feedback-box {
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: rgba(0, 243, 255, 0.08);
+      border: 1px solid rgba(0, 243, 255, 0.35);
+      color: #00f3ff;
+      font-size: 1.02rem;
+      font-weight: 700;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* BANNER VITTORIA DESKTOP IN SOVRAIMPRESSIONE */
+    #desktop-victory-banner {
+      position: fixed;
+      bottom: 64px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 500;
+      width: min(92%, 720px);
+      background: linear-gradient(135deg, rgba(4, 24, 18, 0.96), rgba(6, 14, 34, 0.96));
+      border: 2px solid #39ff14;
+      border-radius: 16px;
+      padding: 18px 24px;
+      text-align: center;
+      box-shadow: 0 0 35px rgba(57, 255, 20, 0.55);
+      display: none;
+    }
+
+    #desktop-victory-banner h2 {
+      font-family: 'Orbitron', sans-serif;
+      color: #39ff14;
+      margin: 0 0 6px 0;
+      font-size: 1.25rem;
+      letter-spacing: 1px;
+    }
+
+    #desktop-victory-banner p {
+      color: #ffffff;
+      margin: 0 0 12px 0;
+      font-size: 1.12rem;
+      font-weight: 700;
+    }
+
+    #dt-btn-replay {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 10px 26px;
+      color: #03050a;
+      background: linear-gradient(90deg, #39ff14, #00f3ff);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      letter-spacing: 1.5px;
+      box-shadow: 0 0 20px rgba(57, 255, 20, 0.7);
+      transition: transform 0.15s ease;
+    }
+
+    #dt-btn-replay:hover {
+      transform: scale(1.06);
+    }
+
+    /* TOAST SIMPATICO ASSISTENTE ROBOTICO BIT-BOT */
+    #bitbot-toast {
+      position: fixed;
+      top: 76px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 400;
+      background: rgba(8, 18, 44, 0.92);
+      border: 1.5px solid #ff00ea;
+      border-radius: 999px;
+      padding: 8px 22px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      box-shadow: 0 0 20px rgba(255, 0, 234, 0.45);
+      display: none;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- OVERLAY INIZIALE -->
+  <div id="start-overlay">
+    <div class="neon-badge">Open Day &bull; Liceo Scientifico Pasolini - Potenza</div>
+    <h1 class="main-title">STARSHIP PASOLINI: BIT ESCAPE</h1>
+    <p class="subtitle">
+      Sei intrappolato nella sala comandi dell'astronave neon! Esplora la stanza, trova i <strong>10 moduli energetici</strong> luminosi e risolvi le sfide di informatica per sbloccare il portellone principale.
+    </p>
+
+    <div class="controls-grid">
+      <div class="control-card">
+        <h3>💻 MODALITÀ PC / TABLET</h3>
+        <p>Muoviti con i tasti <strong>W A S D</strong> (o Frecce). Trascina il mouse per guardarti intorno e <strong>clicca</strong> sugli oggetti luminosi per rispondere.</p>
+      </div>
+      <div class="control-card vr">
+        <h3>🥽 META QUEST 2 (VR)</h3>
+        <p>Premi il tasto <strong>VR</strong> in basso a destra. Usa la <strong>levetta</strong> per spostarti e punta il <strong>raggio laser</strong> del controller premendo il grilletto.</p>
+      </div>
+    </div>
+
+    <button id="btn-start">INIZIA MISSIONE</button>
+  </div>
+
+  <!-- HUD SU SCHERMO PC -->
+  <div id="pc-hud">
+    <div class="hud-pill">
+      <span>MODULI: <strong id="hud-score" style="color:#39ff14;">0 / 10</strong></span>
+      <span>|</span>
+      <span>COMBO: <strong id="hud-streak" style="color:#ffe600;">0x 🔥</strong></span>
+      <span>|</span>
+      <span>TEMPO: <strong id="hud-timer" style="color:#00f3ff;">00:00</strong></span>
+      <span>|</span>
+      <span>TENTATIVI: <strong id="hud-attempts" style="color:#ff00ea;">0</strong></span>
+    </div>
+    <div class="hud-pill">
+      <button id="btn-audio-toggle" class="hud-btn">🔊 MUSICA: ON</button>
+      <button id="btn-reset-hud" class="hud-btn" style="border-color:#00f3ff; color:#00f3ff;">↻ RIAVVIA</button>
+    </div>
+  </div>
+
+  <!-- MESSAGGI SIMPATICI DI BIT-BOT -->
+  <div id="bitbot-toast">
+    <span style="color:#ff00ea; font-family:'Orbitron',sans-serif;">🤖 BIT-BOT:</span>
+    <span id="bitbot-toast-text">Benvenuto a bordo!</span>
+  </div>
+
+  <div id="crosshair-hint">
+    Usa <strong>WASD</strong> per muoverti &bull; Trascina il mouse per ruotare &bull; <strong>Clicca</strong> sui cristalli neon per aprire i quiz
+  </div>
+
+  <!-- MODALE QUIZ HTML5 PER DESKTOP / ANTEPRIMA -->
+  <div id="desktop-quiz-modal" role="dialog" aria-modal="true">
+    <div class="quiz-card" id="desktop-quiz-card">
+      <div class="quiz-card-top">
+        <span class="quiz-module-tag" id="dt-quiz-header">NODO 01 - ANALISI DATI</span>
+        <button type="button" class="quiz-close-btn" id="dt-btn-close" title="Chiudi">✕</button>
+      </div>
+      <p class="quiz-question-text" id="dt-quiz-question">Caricamento domanda...</p>
+      <div class="quiz-options-list">
+        <button type="button" class="desktop-opt-btn" id="dt-opt-0">A) Opzione 1</button>
+        <button type="button" class="desktop-opt-btn" id="dt-opt-1">B) Opzione 2</button>
+        <button type="button" class="desktop-opt-btn" id="dt-opt-2">C) Opzione 3</button>
+      </div>
+      <div class="quiz-feedback-box" id="dt-quiz-feedback">Seleziona la risposta esatta per stabilizzare il nodo energetico.</div>
+    </div>
+  </div>
+
+  <!-- BANNER CELEBRATIVO DESKTOP AL COMPLETAMENTO -->
+  <div id="desktop-victory-banner">
+    <h2>🚀 PORTELLONE SBLOCCATO (10/10)!</h2>
+    <p id="desktop-victory-text">Sei idoneo per essere un nostro grande studente del Liceo Scientifico Pasolini di Potenza!</p>
+    <button type="button" id="dt-btn-replay">↻ GIOCA DI NUOVO (NUOVE 10 DOMANDE)</button>
+  </div>
+
+  <!-- SCENA 3D / WEBXR A-FRAME -->
+  <a-scene
+    id="scene"
+    background="color: #02040a"
+    fog="type: exponential; color: #040816; density: 0.022"
+    renderer="antialias: true; colorManagement: true; highRefreshRate: true"
+    cursor="rayOrigin: mouse; fuse: false"
+    raycaster="objects: .clickable"
+    embedded
+    style="position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1;"
+  >
+    <!-- ASSETS E TEXTURE PROCEDURALI NEON -->
+    <a-assets>
+      <canvas id="grid-canvas" width="512" height="512"></canvas>
+      <canvas id="wall-canvas" width="512" height="512"></canvas>
+    </a-assets>
+
+    <!-- RIG GIOCATORE (Supporta sia PC WASD che Meta Quest 2 VR) -->
+    <a-entity id="player-rig" position="0 0 5.5" movement-controls="speed: 0.18" room-boundary-guard>
+      <a-camera
+        id="player-camera"
+        position="0 1.6 0"
+        look-controls="pointerLockEnabled: false"
+        wasd-controls="acceleration: 28"
+      >
+        <!-- Puntatore centrale visibile su PC/Cardboard -->
+        <a-ring
+          id="center-reticle"
+          position="0 0 -1.2"
+          radius-inner="0.008"
+          radius-outer="0.015"
+          material="color: #00f3ff; shader: flat; opacity: 0.9"
+        ></a-ring>
+
+        <!-- PANNELLO OLOGRAFICO QUIZ IN 3D (DEDICATO ALLA MODALITÀ META QUEST 2 VR) -->
+        <a-entity id="vr-quiz-panel" position="0 -0.05 -1.45" visible="false" scale="0.85 0.85 0.85">
+          <!-- Cornice esterna luminosa -->
+          <a-plane width="1.95" height="1.38" color="#00f3ff" material="shader: flat; opacity: 0.9" position="0 0 -0.01"></a-plane>
+          <!-- Sfondo scuro olografico -->
+          <a-plane width="1.90" height="1.33" color="#050b1c" material="shader: flat; opacity: 0.96" position="0 0 0"></a-plane>
+
+          <!-- Intestazione Modulo -->
+          <a-text
+            id="quiz-header"
+            value="NODO 01 - ANALISI DATI"
+            position="0 0.56 0.01"
+            align="center"
+            color="#ff00ea"
+            width="2.1"
+            font="roboto"
+          ></a-text>
+
+          <!-- Testo Domanda -->
+          <a-text
+            id="quiz-question"
+            value="Caricamento domanda..."
+            position="0 0.34 0.01"
+            align="center"
+            color="#ffffff"
+            width="1.72"
+            wrap-count="36"
+            font="roboto"
+          ></a-text>
+
+          <!-- Bottone Risposta A -->
+          <a-entity id="opt-btn-0" position="0 0.06 0.01">
+            <a-plane id="opt-plane-0" width="1.70" height="0.16" color="#0b1d3a" material="shader: flat"></a-plane>
+            <a-plane width="1.72" height="0.17" color="#00f3ff" material="shader: flat; opacity: 0.55" position="0 0 -0.005"></a-plane>
+            <a-text id="opt-text-0" value="A) Opzione 1" align="center" color="#e0f7ff" width="1.65" wrap-count="42" position="0 0 0.01"></a-text>
+          </a-entity>
+
+          <!-- Bottone Risposta B -->
+          <a-entity id="opt-btn-1" position="0 -0.14 0.01">
+            <a-plane id="opt-plane-1" width="1.70" height="0.16" color="#0b1d3a" material="shader: flat"></a-plane>
+            <a-plane width="1.72" height="0.17" color="#00f3ff" material="shader: flat; opacity: 0.55" position="0 0 -0.005"></a-plane>
+            <a-text id="opt-text-1" value="B) Opzione 2" align="center" color="#e0f7ff" width="1.65" wrap-count="42" position="0 0 0.01"></a-text>
+          </a-entity>
+
+          <!-- Bottone Risposta C -->
+          <a-entity id="opt-btn-2" position="0 -0.34 0.01">
+            <a-plane id="opt-plane-2" width="1.70" height="0.16" color="#0b1d3a" material="shader: flat"></a-plane>
+            <a-plane width="1.72" height="0.17" color="#00f3ff" material="shader: flat; opacity: 0.55" position="0 0 -0.005"></a-plane>
+            <a-text id="opt-text-2" value="C) Opzione 3" align="center" color="#e0f7ff" width="1.65" wrap-count="42" position="0 0 0.01"></a-text>
+          </a-entity>
+
+          <!-- Messaggio di feedback / suggerimento -->
+          <a-text
+            id="quiz-feedback"
+            value="Seleziona la risposta corretta"
+            position="0 -0.50 0.01"
+            align="center"
+            color="#39ff14"
+            width="1.65"
+            wrap-count="44"
+          ></a-text>
+
+          <!-- Tasto Chiudi Pannello -->
+          <a-entity id="btn-close-quiz" position="0.78 0.56 0.02">
+            <a-plane id="close-plane-vr" width="0.22" height="0.12" color="#ff0055" material="shader: flat"></a-plane>
+            <a-text value="X" align="center" color="#ffffff" width="2.2" position="0 0 0.01"></a-text>
+          </a-entity>
+        </a-entity>
+      </a-camera>
+
+      <!-- CONTROLLER META QUEST 2 SINISTRO E DESTRO CON RAGGIO LASER -->
+      <a-entity
+        id="left-hand"
+        laser-controls="hand: left"
+        raycaster="objects: .clickable; far: 25; lineColor: #00f3ff; lineOpacity: 0.85"
+        thumbstick-locomotion
+      ></a-entity>
+      <a-entity
+        id="right-hand"
+        laser-controls="hand: right"
+        raycaster="objects: .clickable; far: 25; lineColor: #ff00ea; lineOpacity: 0.85"
+        thumbstick-locomotion
+      ></a-entity>
+    </a-entity>
+
+    <!-- ILLUMINAZIONE NEON AMBIENTALE -->
+    <a-light type="ambient" color="#1b2a52" intensity="0.85"></a-light>
+    <a-light type="point" position="0 4.5 0" color="#00f3ff" intensity="1.4" distance="22"></a-light>
+    <a-light type="point" position="-6 3 -4" color="#ff00ea" intensity="1.1" distance="16"></a-light>
+    <a-light type="point" position="6 3 4" color="#39ff14" intensity="0.9" distance="16"></a-light>
+
+    <!-- ARCHITETTURA ASTRONAVE STILE "BIT BIT / TRON" -->
+    <a-entity id="spaceship-room">
+      <!-- Pavimento con griglia neon -->
+      <a-plane
+        id="floor"
+        position="0 0 0"
+        rotation="-90 0 0"
+        width="18"
+        height="18"
+        material="src: #grid-canvas; repeat: 12 12; roughness: 0.25; metalness: 0.8"
+      ></a-plane>
+
+      <!-- Soffitto tecnologico con travi luminose -->
+      <a-plane
+        position="0 5.5 0"
+        rotation="90 0 0"
+        width="18"
+        height="18"
+        color="#050814"
+        material="metalness: 0.7; roughness: 0.4"
+      ></a-plane>
+
+      <!-- Strisce Neon sul soffitto -->
+      <a-box position="-4 5.45 0" width="0.18" height="0.08" depth="17" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 2"></a-box>
+      <a-box position="0 5.45 0" width="0.18" height="0.08" depth="17" material="color: #ff00ea; emissive: #ff00ea; emissiveIntensity: 2"></a-box>
+      <a-box position="4 5.45 0" width="0.18" height="0.08" depth="17" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 2"></a-box>
+
+      <!-- Parete Posteriore (dietro al giocatore) -->
+      <a-box position="0 2.75 9" width="18" height="5.5" depth="0.3" material="src: #wall-canvas; repeat: 6 2; color: #0b132b"></a-box>
+      <a-box position="0 0.15 8.82" width="17.8" height="0.12" depth="0.1" material="color: #ff00ea; emissive: #ff00ea; emissiveIntensity: 2"></a-box>
+
+      <!-- Parete Sinistra con Oblò Panoramico sullo Spazio -->
+      <a-box position="-9 2.75 -5.5" width="0.3" height="5.5" depth="7" material="src: #wall-canvas; repeat: 3 2; color: #0b132b"></a-box>
+      <a-box position="-9 2.75 5.5" width="0.3" height="5.5" depth="7" material="src: #wall-canvas; repeat: 3 2; color: #0b132b"></a-box>
+      <a-box position="-9 0.75 0" width="0.3" height="1.5" depth="4" material="color: #0b132b"></a-box>
+      <a-box position="-9 4.75 0" width="0.3" height="1.5" depth="4" material="color: #0b132b"></a-box>
+      <!-- Cornice neon oblò -->
+      <a-box position="-8.85 1.5 0" width="0.1" height="0.08" depth="4.1" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 2"></a-box>
+      <a-box position="-8.85 4.0 0" width="0.1" height="0.08" depth="4.1" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 2"></a-box>
+
+      <!-- Parete Destra -->
+      <a-box position="9 2.75 0" width="0.3" height="5.5" depth="18" material="src: #wall-canvas; repeat: 6 2; color: #0b132b"></a-box>
+      <a-box position="8.82 0.15 0" width="0.1" height="0.12" depth="17.8" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 2"></a-box>
+      <a-box position="8.82 2.75 0" width="0.1" height="0.08" depth="17.8" material="color: #ff00ea; emissive: #ff00ea; emissiveIntensity: 1.6"></a-box>
+
+      <!-- Targa Olografica a Parete Liceo Pasolini -->
+      <a-entity position="8.75 3.6 0" rotation="0 -90 0">
+        <a-plane width="5.2" height="1.1" color="#050b1c" material="shader: flat; opacity: 0.9"></a-plane>
+        <a-text value="LICEO SCIENTIFICO PASOLINI - POTENZA" align="center" color="#00f3ff" width="6.2" position="0 0.2 0.02"></a-text>
+        <a-text value="LABORATORIO DI INFORMATICA & REALTA' VIRTUALE" align="center" color="#ff00ea" width="4.8" position="0 -0.22 0.02"></a-text>
+      </a-entity>
+
+      <!-- MASCOTTE ROBOTICA FLUTTUANTE "BIT-BOT" AL CENTRO DELLA SALA -->
+      <a-entity id="bitbot-companion" position="0 2.35 -2.2" animation="property: position; dir: alternate; to: 0 2.65 -2.2; loop: true; dur: 1800; easing: easeInOutSine">
+        <!-- Corpo / Testa Grigio Chiaro Metallizzato ben visibile -->
+        <a-octahedron radius="0.34" material="color: #8f9bb3; emissive: #3a4766; emissiveIntensity: 0.45; metalness: 0.55; roughness: 0.35"></a-octahedron>
+        <!-- Anello Orbitale Neon -->
+        <a-torus radius="0.50" radius-tubular="0.022" rotation="75 0 0" material="color: #ff00ea; emissive: #ff00ea; emissiveIntensity: 2" animation="property: rotation; to: 75 360 0; loop: true; dur: 4000; easing: linear"></a-torus>
+        <!-- Occhi Luminosi -->
+        <a-sphere position="-0.12 0.05 0.27" radius="0.06" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 2.5"></a-sphere>
+        <a-sphere position="0.12 0.05 0.27" radius="0.06" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 2.5"></a-sphere>
+        <!-- Fumetto 3D sopra il robot -->
+        <a-text id="bitbot-3d-msg" value="CIAO! TROVA I 10 CRISTALLI NEON!" position="0 0.72 0" align="center" color="#ffe600" width="4.4" look-at="#player-camera"></a-text>
+      </a-entity>
+
+      <!-- LED LAMPEGGIANTI SUL SOFFITTO (SI ATTIVANO ALLA VITTORIA) -->
+      <a-entity id="ceiling-strobe-leds"></a-entity>
+
+      <!-- PARETE FRONTALE CHE SI ALZA COME UNA SERRANDA + MAXISCHERMO ASTRONAVE -->
+      <a-entity id="front-wall-system">
+        <!-- Sezioni fisse laterali e superiore -->
+        <a-box position="-6.25 2.75 -9" width="5.5" height="5.5" depth="0.3" material="src: #wall-canvas; repeat: 2 2; color: #0b132b"></a-box>
+        <a-box position="6.25 2.75 -9" width="5.5" height="5.5" depth="0.3" material="src: #wall-canvas; repeat: 2 2; color: #0b132b"></a-box>
+        <a-box position="0 4.65 -9" width="7.0" height="1.7" depth="0.3" material="color: #0b132b"></a-box>
+
+        <!-- Display di stato sopra la serranda -->
+        <a-plane position="0 4.55 -8.82" width="5.8" height="0.95" color="#050b1c" material="shader: flat"></a-plane>
+        <a-text id="door-status-text" value="SERRANDA BLOCCATA: 0 / 10" position="0 4.70 -8.80" align="center" color="#ff0055" width="7.2"></a-text>
+        <a-text id="door-sub-text" value="ATTIVA TUTTI I 10 MODULI PER SOLLEVARE LA PARETE" position="0 4.35 -8.80" align="center" color="#00f3ff" width="4.8"></a-text>
+
+        <!-- SERRANDA CENTRALIZZATA (SI ALZA VERSO L'ALTO AL TERMINE) -->
+        <a-entity id="shutter-gate" position="0 1.9 -8.9">
+          <a-box width="7.0" height="3.8" depth="0.24" material="color: #101935; metalness: 0.85; roughness: 0.3"></a-box>
+          <!-- Doghe orizzontali neon della serranda -->
+          <a-box position="0 1.3 0.13" width="6.8" height="0.08" depth="0.04" material="color: #ff0055; emissive: #ff0055; emissiveIntensity: 2"></a-box>
+          <a-box position="0 0.65 0.13" width="6.8" height="0.08" depth="0.04" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 1.5"></a-box>
+          <a-box position="0 0 0.13" width="6.8" height="0.08" depth="0.04" material="color: #ff00ea; emissive: #ff00ea; emissiveIntensity: 1.5"></a-box>
+          <a-box position="0 -0.65 0.13" width="6.8" height="0.08" depth="0.04" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 1.5"></a-box>
+          <a-box position="0 -1.3 0.13" width="6.8" height="0.08" depth="0.04" material="color: #ff0055; emissive: #ff0055; emissiveIntensity: 2"></a-box>
+        </a-entity>
+
+        <!-- MAXISCHERMO ASTRONAVE NASCOSTO DIETRO LA SERRANDA -->
+        <a-entity id="victory-screen-room" position="0 1.95 -9.55">
+          <!-- Cornice esterna luminosa del monitor dell'astronave -->
+          <a-box width="6.8" height="3.65" depth="0.14" material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 1.6"></a-box>
+          <!-- Pannello schermo scuro -->
+          <a-plane width="6.5" height="3.38" color="#03091a" material="shader: flat" position="0 0 0.08"></a-plane>
+          <!-- Bordo interno verde fluo -->
+          <a-plane width="6.35" height="3.24" color="#39ff14" material="shader: flat; opacity: 0.14" position="0 0 0.085"></a-plane>
+
+          <a-text
+            value="SISTEMA CENTRALE STARSHIP PASOLINI"
+            position="0 1.32 0.10"
+            align="center"
+            color="#00f3ff"
+            width="6.2"
+          ></a-text>
+
+          <a-text
+            id="victory-big-score"
+            value="PUNTEGGIO FINALE: 10 / 10 (100%)"
+            position="0 0.72 0.10"
+            align="center"
+            color="#ffe600"
+            width="8.5"
+          ></a-text>
+
+          <!-- Contenitore con maschera per scritta a scorrimento sul maxischermo -->
+          <a-entity id="victory-marquee-wrapper" position="0 -0.05 0.10">
+            <a-text
+              id="victory-scrolling-text"
+              value="Sei idoneo per essere un nostro grande studente del Liceo Scientifico Pasolini di Potenza!   ***   BENVENUTO NEL FUTURO DIGITALE!   ***"
+              position="4.5 0 0"
+              align="left"
+              color="#39ff14"
+              width="7.2"
+            ></a-text>
+          </a-entity>
+
+          <a-text
+            id="victory-stats-msg"
+            value="Tempo: 00:00 | Precisione: 100%"
+            position="0 -0.72 0.10"
+            align="center"
+            color="#e0f7ff"
+            width="5.2"
+          ></a-text>
+
+          <!-- PULSANTE INTERATTIVO SUL MAXISCHERMO PER AVVIARE UNA NUOVA MISSIONE -->
+          <a-entity id="screen-new-mission-btn" position="0 -1.24 0.12">
+            <a-box
+              id="screen-replay-box"
+              class="clickable"
+              width="3.6"
+              height="0.46"
+              depth="0.06"
+              material="color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 1.4; shader: flat"
+            ></a-box>
+            <a-text
+              value=">> INIZIA UNA NUOVA MISSIONE <<"
+              position="0 0 0.04"
+              align="center"
+              color="#03050a"
+              width="5.4"
+            ></a-text>
+          </a-entity>
+        </a-entity>
+      </a-entity>
+    </a-entity>
+
+    <!-- CONTENITORE PER I 10 MODULI INTERATTIVI -->
+    <a-entity id="modules-container"></a-entity>
+
+    <!-- CAMPO STELLARE ESTERNO (VISIBILE DALL'OBLÒ) -->
+    <a-entity id="starfield-container"></a-entity>
+  </a-scene>
+
+  <script>
+    /**
+     * =========================================================================
+     * 1. BANCA DATI DI 30 DOMANDE DI INFORMATICA (LIVELLO TERZA MEDIA)
+     *    Ad ogni partita ne vengono estratte 10 casuali!
+     * =========================================================================
+     */
+    const ALL_QUIZ_QUESTIONS = [
+      {
+        title: "CODICE BINARIO",
+        question: "I computer parlano usando solo 0 e 1. Quanto vale il numero binario 101 nel nostro sistema decimale?",
+        options: ["A) 5", "B) 101", "C) 3"],
+        correctIndex: 0,
+        hint: "Suggerimento: Le posizioni da destra valgono 1, 2 e 4 (4 + 0 + 1)."
+      },
+      {
+        title: "HARDWARE E SOFTWARE",
+        question: "Quale tra questi elementi del computer è un SOFTWARE (cioè un programma e non un oggetto fisico)?",
+        options: ["A) La tastiera meccanica", "B) Il sistema operativo", "C) Lo schermo OLED"],
+        correctIndex: 1,
+        hint: "Suggerimento: L'hardware si può toccare, il software è fatto di codice."
+      },
+      {
+        title: "ALGORITMI",
+        question: "In informatica, che cos'è un ALGORITMO?",
+        options: ["A) Un virus informatico", "B) Una sequenza finita di passi per risolvere un problema", "C) Un cavo di rete"],
+        correctIndex: 1,
+        hint: "Suggerimento: Pensa a una ricetta di cucina passo dopo passo!"
+      },
+      {
+        title: "MEMORIA DIGITALE",
+        question: "Quale unità di misura della memoria contiene più dati?",
+        options: ["A) 1 Kilobyte (KB)", "B) 1 Megabyte (MB)", "C) 1 Gigabyte (GB)"],
+        correctIndex: 2,
+        hint: "Suggerimento: Giga significa circa un miliardo di byte!"
+      },
+      {
+        title: "ARCHITETTURA PC",
+        question: "Quale componente è considerato il vero 'cervello' che esegue tutti i calcoli del computer?",
+        options: ["A) La CPU (Processore)", "B) L'alimentatore", "C) Il mouse ottico"],
+        correctIndex: 0,
+        hint: "Suggerimento: La sigla significa Central Processing Unit."
+      },
+      {
+        title: "LOGICA BOOLEANA",
+        question: "Nella logica dei computer (porta AND), se una condizione è VERA e l'altra è FALSA, il risultato finale è:",
+        options: ["A) VERO", "B) FALSO", "C) ERRORE DI SISTEMA"],
+        correctIndex: 1,
+        hint: "Suggerimento: Con 'AND' (E) devono essere vere entrambe le condizioni."
+      },
+      {
+        title: "CYBERSECURITY",
+        question: "Quale caratteristica rende una password davvero sicura contro gli hacker?",
+        options: ["A) Il tuo nome + anno di nascita", "B) La parola 'password123'", "C) Un mix lungo di maiuscole, minuscole, numeri e simboli"],
+        correctIndex: 2,
+        hint: "Suggerimento: Più caratteri diversi usi, più difficile sarà indovinarla."
+      },
+      {
+        title: "RETI E WI-FI",
+        question: "Attraverso che cosa viaggiano i dati quando ti colleghi in modalità wireless tramite Wi-Fi?",
+        options: ["A) Onde radio invisibili", "B) Raggi laser", "C) Ultrasuoni"],
+        correctIndex: 0,
+        hint: "Suggerimento: È lo stesso principio fisico usato dalle trasmissioni radio."
+      },
+      {
+        title: "CODING E CICLI",
+        question: "Quando programmi un videogioco, a cosa serve un 'CICLO' (o Loop)?",
+        options: ["A) A spegnere il computer", "B) A ripetere automaticamente un'azione più volte", "C) A cancellare i file"],
+        correctIndex: 1,
+        hint: "Suggerimento: Evita di riscrivere la stessa istruzione cento volte."
+      },
+      {
+        title: "GRAFICA DIGITALE",
+        question: "Come si chiama il singolo puntino luminoso che forma qualsiasi immagine sullo schermo?",
+        options: ["A) Pixel", "B) Voxel", "C) Hertz"],
+        correctIndex: 0,
+        hint: "Suggerimento: Deriva da 'Picture Element' (elemento d'immagine)."
+      },
+      {
+        title: "MEMORIA RAM",
+        question: "Cosa succede ai dati nella memoria RAM quando spegni il computer?",
+        options: ["A) Restano salvati per sempre", "B) Si cancellano perché è una memoria temporanea (volatile)", "C) Vengono stampati"],
+        correctIndex: 1,
+        hint: "Suggerimento: La RAM serve solo mentre i programmi sono aperti."
+      },
+      {
+        title: "IL PRIMO BUG",
+        question: "Perché in informatica un errore di programmazione si chiama 'BUG' (insetto)?",
+        options: ["A) Perché nel 1947 una vera falena si incastrò in un computer", "B) Perché i computer hanno paura dei ragni", "C) È il nome del suo inventore"],
+        correctIndex: 0,
+        hint: "Suggerimento: Accadde davvero sul computer Mark II ad Harvard!"
+      },
+      {
+        title: "NAVIGAZIONE WEB",
+        question: "Cosa indica il lucchetto chiuso accanto all'indirizzo di un sito web (HTTPS)?",
+        options: ["A) Il sito è a pagamento", "B) La connessione è crittografata e sicura", "C) Il sito è chiuso per manutenzione"],
+        correctIndex: 1,
+        hint: "Suggerimento: La 'S' finale di HTTPS sta proprio per Secure."
+      },
+      {
+        title: "PERIFERICHE INPUT/OUTPUT",
+        question: "Quale di questi dispositivi è una periferica di INPUT (invia dati al computer)?",
+        options: ["A) Il microfono", "B) Le cuffie audio", "C) La stampante"],
+        correctIndex: 0,
+        hint: "Suggerimento: Con quale di questi fai entrare la tua voce nel PC?"
+      },
+      {
+        title: "SISTEMA BINARIO BASE",
+        question: "Quanti bit servono per formare 1 Byte?",
+        options: ["A) 4 bit", "B) 8 bit", "C) 100 bit"],
+        correctIndex: 1,
+        hint: "Suggerimento: È un numero pari minore di 10."
+      },
+      {
+        title: "INTELLIGENZA ARTIFICIALE",
+        question: "Come fa un'Intelligenza Artificiale a riconoscere un gatto nelle foto?",
+        options: ["A) Lo cerca sul dizionario", "B) Si allena su migliaia di immagini cercando schemi ricorrenti", "C) Chiede aiuto a un gatto vero"],
+        correctIndex: 1,
+        hint: "Suggerimento: Si chiama Machine Learning (apprendimento automatico)."
+      },
+      {
+        title: "ARCHIVIAZIONE DATI",
+        question: "Qual è il vantaggio principale di un disco SSD rispetto a un vecchio Hard Disk meccanico?",
+        options: ["A) È molto più veloce e non ha parti mobili", "B) Pesa 10 chilogrammi", "C) Funziona solo senza elettricità"],
+        correctIndex: 0,
+        hint: "Suggerimento: Usa memorie flash simili a quelle delle chiavette USB."
+      },
+      {
+        title: "PHISHING E TRUFFĘ",
+        question: "Ricevi un'email che dice 'Hai vinto un iPhone, inserisci subito la password della tua banca'. Di cosa si tratta?",
+        options: ["A) Un regalo ufficiale", "B) Un tentativo di Phishing (truffa online)", "C) Un aggiornamento di Windows"],
+        correctIndex: 1,
+        hint: "Suggerimento: Nessuno regala premi chiedendo le tue password!"
+      },
+      {
+        title: "LINGUAGGI DI PROGRAMMAZIONE",
+        question: "Quale tra questi è un vero linguaggio di programmazione molto usato a scuola e nella scienza?",
+        options: ["A) Python", "B) Cobra", "C) Vipera"],
+        correctIndex: 0,
+        hint: "Suggerimento: Prende il nome dal gruppo comico Monty Python (ma ha un serpente come logo)."
+      },
+      {
+        title: "CLOUD COMPUTING",
+        question: "Quando salvi una foto 'sul Cloud' (come Google Drive o iCloud), dove finisce davvero?",
+        options: ["A) Nelle nuvole del cielo", "B) Su potenti computer (server) collegati a Internet", "C) Dentro la batteria del telefono"],
+        correctIndex: 1,
+        hint: "Suggerimento: Il Cloud è una rete di data center sempre accesi."
+      },
+      {
+        title: "ISTRUZIONI CONDIZIONALI",
+        question: "In programmazione, a cosa serve il comando 'IF ... ELSE' (SE ... ALTRIMENTI)?",
+        options: ["A) A scegliere quale azione fare in base a una condizione", "B) A cambiare lo sfondo del desktop", "C) A riavviare il router"],
+        correctIndex: 0,
+        hint: "Suggerimento: Esempio: SE piove prendi l'ombrello, ALTRIMENTI metti gli occhiali da sole."
+      },
+      {
+        title: "INTERNET E RETI",
+        question: "Cos'è l'indirizzo IP di un dispositivo collegato a Internet?",
+        options: ["A) Il codice fiscale del proprietario", "B) Un numero identificativo unico per comunicare in rete", "C) La password del Wi-Fi"],
+        correctIndex: 1,
+        hint: "Suggerimento: È come l'indirizzo di casa tua per far arrivare i pacchetti dati."
+      },
+      {
+        title: "FILE E FORMATI",
+        question: "Quale estensione di file indica solitamente un'immagine digitale?",
+        options: ["A) .mp3", "B) .jpg (o .png)", "C) .exe"],
+        correctIndex: 1,
+        hint: "Suggerimento: .mp3 è audio, .exe è un programma eseguibile."
+      },
+      {
+        title: "SCHEDE VIDEO (GPU)",
+        question: "Quale componente del PC si occupa principalmente di calcolare la grafica 3D dei videogiochi?",
+        options: ["A) La GPU (Scheda Video)", "B) La scheda audio", "C) Il lettore DVD"],
+        correctIndex: 0,
+        hint: "Suggerimento: Graphics Processing Unit!"
+      },
+      {
+        title: "OPEN SOURCE",
+        question: "Cosa significa che un programma (come Linux o Blender) è 'Open Source'?",
+        options: ["A) Che il suo codice sorgente è aperto, studiabile e migliorabile da tutti", "B) Che funziona solo di giorno", "C) Che non ha finestre"],
+        correctIndex: 0,
+        hint: "Suggerimento: Open = aperto, Source = codice sorgente."
+      },
+      {
+        title: "LOGICA OR",
+        question: "Nella logica booleana (porta OR), se almeno UNA delle due condizioni è VERA, il risultato è:",
+        options: ["A) FALSO", "B) VERO", "C) NULLO"],
+        correctIndex: 1,
+        hint: "Suggerimento: Con 'OR' (OPPURE) basta che sia vera una sola condizione."
+      },
+      {
+        title: "CODICE BINARIO 2",
+        question: "Nel linguaggio binario del computer, come si scrive il numero 2?",
+        options: ["A) 10", "B) 02", "C) 11"],
+        correctIndex: 0,
+        hint: "Suggerimento: 0 è 0, 1 è 1, poi si passa a due cifre: 10!"
+      },
+      {
+        title: "BACKUP DI SICUREZZA",
+        question: "Che cos'è un BACKUP?",
+        options: ["A) Una copia di sicurezza dei propri file importanti", "B) Un tasto della tastiera per andare a capo", "C) Un programma per disegnare"],
+        correctIndex: 0,
+        hint: "Suggerimento: Salva i tuoi ricordi se il PC dovesse rompersi."
+      },
+      {
+        title: "SISTEMA OPERATIVO",
+        question: "Quale di questi NON è un sistema operativo?",
+        options: ["A) Windows 11", "B) Android", "C) Google Chrome"],
+        correctIndex: 2,
+        hint: "Suggerimento: Chrome è un browser per navigare su Internet!"
+      },
+      {
+        title: "ROBOTICA E SENSORI",
+        question: "In un robot autonomo, a cosa servono i SENSORI (es. ultrasuoni o infrarossi)?",
+        options: ["A) A percepire l'ambiente esterno ed evitare ostacoli", "B) A ricaricare le pile", "C) A cambiare colore alla scocca"],
+        correctIndex: 0,
+        hint: "Suggerimento: Sono come gli occhi e le orecchie del robot!"
+      }
+    ];
+
+    // Array che conterrà le 10 domande estratte casualmente nella partita corrente
+    let activeQuestions = [];
+
+    // Frasi simpatiche dell'assistente Bit-Bot
+    const BITBOT_PRAISES = [
+      "Grande! Neuroni al 100% di potenza! ⚡",
+      "Boom! Nodo stabilizzato alla velocità della luce! 🚀",
+      "Complimenti, sembri già un informatico del Pasolini! 😎",
+      "Perfetto! Circuito verde fluo attivato! 💚",
+      "Incredibile! Neanche un bug ti ferma! 🛡️"
+    ];
+
+    const BITBOT_ENCOURAGEMENTS = [
+      "Ops! Cortocircuito! Leggi il suggerimento e riprova! 🔧",
+      "Quasi! Anche i migliori programmatori fanno debug! 🐛",
+      "Riprova, questo cristallo è un po' testardo! 💡"
+    ];
+
+    // Posizioni e forme geometriche neon stile "Bit Bit" distribuite nella sala
+    const MODULE_LAYOUTS = [
+      { pos: "-6.5 1.4 -6.5", shape: "octahedron", color: "#00f3ff" },
+      { pos: "-3.2 1.5 -7.5", shape: "dodecahedron", color: "#ff00ea" },
+      { pos: "3.2 1.5 -7.5",  shape: "icosahedron", color: "#00f3ff" },
+      { pos: "6.5 1.4 -6.5",  shape: "octahedron", color: "#ff00ea" },
+      { pos: "-7.2 1.4 -2.2", shape: "box", color: "#ff6600" },
+      { pos: "7.2 1.4 -2.2",  shape: "dodecahedron", color: "#00f3ff" },
+      { pos: "-7.2 1.4 3.2",  shape: "icosahedron", color: "#ff00ea" },
+      { pos: "7.2 1.4 3.2",   shape: "box", color: "#ff6600" },
+      { pos: "-5.0 1.4 7.2",  shape: "octahedron", color: "#00f3ff" },
+      { pos: "5.0 1.4 7.2",   shape: "dodecahedron", color: "#ff00ea" }
+    ];
+
+    // Colori fluo vivaci per accendere i cilindri sotto le gemme dopo la risposta
+    const FLUO_CYLINDER_COLORS = [
+      "#39ff14", // Verde fluo
+      "#00ffea", // Ciano elettrico fluo
+      "#ff00ff", // Magenta fluo
+      "#ffe600", // Giallo evidenziatore fluo
+      "#ff3366", // Rosa neon fluo
+      "#00ff88", // Verde menta fluo
+      "#ff6600", // Arancio fluo
+      "#33ccff", // Azzurro laser fluo
+      "#ccff00", // Lime fluo
+      "#ff00aa"  // Fucsia fluo
+    ];
+
+    function pickRandom10Questions() {
+      const copy = [...ALL_QUIZ_QUESTIONS];
+      // Algoritmo Fisher-Yates per mescolare le 30 domande in modo imparziale
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy.slice(0, 10).map((q, idx) => ({
+        ...q,
+        displayTitle: `NODO ${String(idx + 1).padStart(2, "0")} - ${q.title}`
+      }));
+    }
+
+    /**
+     * =========================================================================
+     * 2. MOTORE AUDIO PROCEDURALE SYNTHWAVE (WEB AUDIO API - ZERO FILE ESTERNI)
+     * =========================================================================
+     */
+    class NeonSynthAudio {
+      constructor() {
+        this.ctx = null;
+        this.isPlaying = false;
+        this.isMuted = false;
+        this.loopTimer = null;
+        this.step = 0;
+        // Linea di basso arpeggiata stile Bit Bit / Tron (La minore / Fa / Do / Sol)
+        this.bassNotes = [
+          110.00, 110.00, 220.00, 110.00, 130.81, 130.81, 261.63, 130.81,
+          87.31,  87.31,  174.61, 87.31,  98.00,  98.00,  196.00, 98.00
+        ];
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === "suspended") {
+          this.ctx.resume().catch(() => {});
+        }
+      }
+
+      startMusic() {
+        this.init();
+        if (this.ctx && this.ctx.state === "suspended") {
+          this.ctx.resume();
+        }
+        if (this.isPlaying) return;
+        this.isPlaying = true;
+        this.isVictoryMusic = false;
+        this.step = 0;
+
+        const playStep = () => {
+          if (this.isMuted || !this.ctx) return;
+          if (this.ctx.state === "suspended") {
+            this.ctx.resume().catch(() => {});
+          }
+          const now = this.ctx.currentTime;
+
+          if (this.isVictoryMusic) {
+            // MUSICA TRIONFALE DI VITTORIA (Arpeggio maggiore festoso)
+            const victoryNotes = [
+              523.25, 659.25, 783.99, 1046.50,
+              587.33, 739.99, 880.00, 1174.66,
+              659.25, 783.99, 1046.50, 1318.51,
+              783.99, 1046.50, 1318.51, 1567.98
+            ];
+            const vFreq = victoryNotes[this.step % victoryNotes.length];
+
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(vFreq, now);
+            gain.gain.setValueAtTime(0.14, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.26);
+
+            if (this.step % 4 === 0) {
+              const bass = this.ctx.createOscillator();
+              const bGain = this.ctx.createGain();
+              bass.type = "sine";
+              bass.frequency.setValueAtTime(vFreq / 4, now);
+              bGain.gain.setValueAtTime(0.18, now);
+              bGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+              bass.connect(bGain);
+              bGain.connect(this.ctx.destination);
+              bass.start(now);
+              bass.stop(now + 0.52);
+            }
+          } else {
+            // Musica esplorazione synthwave
+            const freq = this.bassNotes[this.step % this.bassNotes.length];
+
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const filter = this.ctx.createBiquadFilter();
+
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(freq, now);
+
+            filter.type = "lowpass";
+            filter.frequency.setValueAtTime(520 + (this.step % 4) * 160, now);
+
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.23);
+
+            if (this.step % 2 === 0) {
+              const leadOsc = this.ctx.createOscillator();
+              const leadGain = this.ctx.createGain();
+              leadOsc.type = "triangle";
+              leadOsc.frequency.setValueAtTime(freq * 4, now);
+              leadGain.gain.setValueAtTime(0.055, now);
+              leadGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.35);
+              leadOsc.connect(leadGain);
+              leadGain.connect(this.ctx.destination);
+              leadOsc.start(now);
+              leadOsc.stop(now + 0.36);
+            }
+          }
+
+          this.step++;
+        };
+
+        playStep();
+        this.loopTimer = setInterval(playStep, 220);
+      }
+
+      switchToVictoryMusic() {
+        this.isVictoryMusic = true;
+        this.step = 0;
+        this.playVictory();
+      }
+
+      switchToNormalMusic() {
+        this.isVictoryMusic = false;
+        this.step = 0;
+      }
+
+      toggleMute() {
+        this.isMuted = !this.isMuted;
+        return !this.isMuted;
+      }
+
+      playSelect() {
+        if (this.isMuted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      }
+
+      playSuccess() {
+        if (this.isMuted || !this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // Accordo Do Maggiore luminoso
+        notes.forEach((freq, i) => {
+          const now = this.ctx.currentTime + i * 0.07;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.14, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.42);
+        });
+      }
+
+      playError() {
+        if (this.isMuted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.linearRampToValueAtTime(110, now + 0.28);
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.32);
+      }
+
+      playVictory() {
+        if (this.isMuted || !this.ctx) return;
+        const fanfare = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+        fanfare.forEach((freq, idx) => {
+          const now = this.ctx.currentTime + idx * 0.13;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = "square";
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.09, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.48);
+        });
+      }
+    }
+
+    const audioEngine = new NeonSynthAudio();
+
+    /**
+     * =========================================================================
+     * 3. COMPONENTE LOCOMOZIONE META QUEST 2 (LEVETTA ANALOGICA)
+     * =========================================================================
+     */
+    AFRAME.registerComponent("thumbstick-locomotion", {
+      init: function () {
+        this.axisX = 0;
+        this.axisY = 0;
+        this.el.addEventListener("thumbstickmoved", (evt) => {
+          this.axisX = evt.detail.x;
+          this.axisY = evt.detail.y;
+        });
+      },
+      tick: function (time, delta) {
+        if (Math.abs(this.axisX) < 0.12 && Math.abs(this.axisY) < 0.12) return;
+        const rig = document.getElementById("player-rig");
+        const cam = document.getElementById("player-camera");
+        if (!rig || !cam) return;
+
+        const speed = (delta / 1000) * 3.8;
+        const rotY = cam.object3D.rotation.y;
+        const forwardX = -Math.sin(rotY);
+        const forwardZ = -Math.cos(rotY);
+        const rightX = Math.cos(rotY);
+        const rightZ = -Math.sin(rotY);
+
+        const pos = rig.getAttribute("position");
+        let nextX = pos.x + (forwardX * -this.axisY + rightX * this.axisX) * speed;
+        let nextZ = pos.z + (forwardZ * -this.axisY + rightZ * this.axisX) * speed;
+
+        // Mantieni il giocatore dentro i confini della nave
+        nextX = Math.max(-8.1, Math.min(8.1, nextX));
+        nextZ = Math.max(-8.1, Math.min(8.1, nextZ));
+        rig.setAttribute("position", { x: nextX, y: pos.y, z: nextZ });
+      }
+    });
+
+    /**
+     * =========================================================================
+     * 3B. BARRIERA DI CONTENIMENTO PERIMETRALE (PC WASD + FRECCE + VR)
+     *     Impedisce di attraversare i muri dell'astronave (X e Z tra -8.1 e +8.1)
+     * =========================================================================
+     */
+    AFRAME.registerComponent("room-boundary-guard", {
+      tick: function () {
+        const rig = this.el;
+        const cam = document.getElementById("player-camera");
+        if (!rig || !cam) return;
+
+        // Somma la posizione del rig e l'eventuale spostamento locale della camera (WASD / room-scale)
+        const rigPos = rig.object3D.position;
+        const camPos = cam.object3D.position;
+
+        const worldX = rigPos.x + camPos.x;
+        const worldZ = rigPos.z + camPos.z;
+
+        const minBound = -8.1;
+        const maxBound = 8.1;
+
+        if (worldX < minBound) {
+          rigPos.x += (minBound - worldX);
+        } else if (worldX > maxBound) {
+          rigPos.x -= (worldX - maxBound);
+        }
+
+        if (worldZ < minBound) {
+          rigPos.z += (minBound - worldZ);
+        } else if (worldZ > maxBound) {
+          rigPos.z -= (worldZ - maxBound);
+        }
+      }
+    });
+
+    /**
+     * =========================================================================
+     * 4. GENERAZIONE TEXTURE PROCEDURALI NEON (PAVIMENTO E PARETI)
+     * =========================================================================
+     */
+    function generateNeonTextures() {
+      // Pavimento a griglia stile Bit Bit / Tron
+      const gridCanvas = document.getElementById("grid-canvas");
+      const gCtx = gridCanvas.getContext("2d");
+      gCtx.fillStyle = "#040713";
+      gCtx.fillRect(0, 0, 512, 512);
+
+      // Griglia sottile ciano
+      gCtx.strokeStyle = "rgba(0, 243, 255, 0.35)";
+      gCtx.lineWidth = 2;
+      for (let i = 0; i <= 512; i += 64) {
+        gCtx.beginPath();
+        gCtx.moveTo(i, 0);
+        gCtx.lineTo(i, 512);
+        gCtx.stroke();
+
+        gCtx.beginPath();
+        gCtx.moveTo(0, i);
+        gCtx.lineTo(512, i);
+        gCtx.stroke();
+      }
+
+      // Bordo principale luminoso ciano + magenta
+      gCtx.strokeStyle = "#00f3ff";
+      gCtx.lineWidth = 6;
+      gCtx.strokeRect(0, 0, 512, 512);
+
+      // Pareti tecnologiche con circuiti
+      const wallCanvas = document.getElementById("wall-canvas");
+      const wCtx = wallCanvas.getContext("2d");
+      wCtx.fillStyle = "#070c1e";
+      wCtx.fillRect(0, 0, 512, 512);
+
+      wCtx.strokeStyle = "rgba(0, 243, 255, 0.25)";
+      wCtx.lineWidth = 3;
+      wCtx.strokeRect(12, 12, 488, 488);
+
+      wCtx.strokeStyle = "rgba(255, 0, 234, 0.35)";
+      wCtx.lineWidth = 2;
+      wCtx.beginPath();
+      wCtx.moveTo(40, 256);
+      wCtx.lineTo(180, 256);
+      wCtx.lineTo(220, 210);
+      wCtx.lineTo(472, 210);
+      wCtx.stroke();
+    }
+
+    /**
+     * =========================================================================
+     * 5. STATO DEL GIOCO E LOGICA ESCAPE ROOM
+     * =========================================================================
+     */
+    const gameState = {
+      solved: new Array(10).fill(false),
+      activeModuleIndex: null,
+      attempts: 0,
+      streak: 0,
+      elapsedSeconds: 0,
+      timerInterval: null,
+      ledBlinkInterval: null,
+      doorOpened: false,
+      isAnsweringLock: false
+    };
+
+    let toastTimeout = null;
+    function showBitBotMessage(msg) {
+      // Aggiorna fumetto 3D sopra il robot nella sala
+      const bot3d = document.getElementById("bitbot-3d-msg");
+      if (bot3d) bot3d.setAttribute("value", msg.toUpperCase());
+
+      // Aggiorna toast HUD su schermo PC
+      const toast = document.getElementById("bitbot-toast");
+      const toastTxt = document.getElementById("bitbot-toast-text");
+      if (toast && toastTxt) {
+        toastTxt.textContent = msg;
+        toast.style.display = "flex";
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.style.display = "none";
+        }, 4200);
+      }
+    }
+
+    function formatTime(totalSeconds) {
+      const mins = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+      const secs = String(totalSeconds % 60).padStart(2, "0");
+      return `${mins}:${secs}`;
+    }
+
+    function startMissionTimer() {
+      stopMissionTimer();
+      gameState.elapsedSeconds = 0;
+      const timerEl = document.getElementById("hud-timer");
+      if (timerEl) timerEl.textContent = "00:00";
+
+      gameState.timerInterval = setInterval(() => {
+        gameState.elapsedSeconds++;
+        if (timerEl) timerEl.textContent = formatTime(gameState.elapsedSeconds);
+      }, 1000);
+    }
+
+    function stopMissionTimer() {
+      if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+      }
+    }
+
+    function isVRModeActive() {
+      const scene = document.getElementById("scene");
+      return scene && scene.is("vr-mode");
+    }
+
+    function setCameraLookEnabled(enabled) {
+      const cam = document.getElementById("player-camera");
+      if (cam) {
+        cam.setAttribute("look-controls", `enabled: ${enabled}; pointerLockEnabled: false`);
+      }
+    }
+
+    function setVRPanelInteractable(active) {
+      const ids = ["opt-plane-0", "opt-plane-1", "opt-plane-2", "close-plane-vr"];
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (active) el.classList.add("clickable");
+        else el.classList.remove("clickable");
+      });
+    }
+
+    function createStarfield() {
+      const container = document.getElementById("starfield-container");
+      if (!container) return;
+      container.innerHTML = "";
+      const colors = ["#ffffff", "#00f3ff", "#ff00ea", "#ffe600"];
+
+      for (let i = 0; i < 85; i++) {
+        const star = document.createElement("a-sphere");
+        const x = -14 - Math.random() * 25;
+        const y = -6 + Math.random() * 22;
+        const z = -22 + Math.random() * 44;
+        const col = colors[i % colors.length];
+        star.setAttribute("position", `${x} ${y} ${z}`);
+        star.setAttribute("radius", (0.04 + Math.random() * 0.08).toFixed(2));
+        star.setAttribute("material", `color: ${col}; emissive: ${col}; emissiveIntensity: 2.2; shader: flat`);
+        container.appendChild(star);
+      }
+    }
+
+    function createCeilingLeds() {
+      const container = document.getElementById("ceiling-strobe-leds");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const positions = [
+        [-6, -6], [-2, -6], [2, -6], [6, -6],
+        [-6, -2], [-2, -2], [2, -2], [6, -2],
+        [-6,  2], [-2,  2], [2,  2], [6,  2],
+        [-6,  6], [-2,  6], [2,  6], [6,  6]
+      ];
+
+      positions.forEach(([x, z], i) => {
+        const led = document.createElement("a-sphere");
+        led.setAttribute("id", `ceiling-led-${i}`);
+        led.setAttribute("position", `${x} 5.38 ${z}`);
+        led.setAttribute("radius", "0.14");
+        led.setAttribute("material", "color: #16223d; emissive: #000000; emissiveIntensity: 0");
+        container.appendChild(led);
+      });
+    }
+
+    function startVictoryCeilingLeds() {
+      stopVictoryCeilingLeds();
+      const ledColors = ["#39ff14", "#00f3ff", "#ff00ea", "#ffe600", "#ff3366"];
+      let tick = 0;
+      gameState.ledBlinkInterval = setInterval(() => {
+        for (let i = 0; i < 16; i++) {
+          const led = document.getElementById(`ceiling-led-${i}`);
+          if (!led) continue;
+          const isOn = (i + tick) % 2 === 0;
+          const col = ledColors[(i + tick) % ledColors.length];
+          if (isOn) {
+            led.setAttribute("material", `color: ${col}; emissive: ${col}; emissiveIntensity: 3.0`);
+          } else {
+            led.setAttribute("material", "color: #16223d; emissive: #000000; emissiveIntensity: 0");
+          }
+        }
+        tick++;
+      }, 280);
+    }
+
+    function stopVictoryCeilingLeds() {
+      if (gameState.ledBlinkInterval) {
+        clearInterval(gameState.ledBlinkInterval);
+        gameState.ledBlinkInterval = null;
+      }
+      for (let i = 0; i < 16; i++) {
+        const led = document.getElementById(`ceiling-led-${i}`);
+        if (led) {
+          led.setAttribute("material", "color: #16223d; emissive: #000000; emissiveIntensity: 0");
+        }
+      }
+    }
+
+    function sealAllCrystalsInGlass() {
+      MODULE_LAYOUTS.forEach((layout, idx) => {
+        const group = document.getElementById(`module-group-${idx}`);
+        if (!group || document.getElementById(`glass-dome-${idx}`)) return;
+
+        // Cilindro di vetro leggermente meno trasparente e ben visibile con riflesso azzurro-ciano
+        const glass = document.createElement("a-cylinder");
+        glass.setAttribute("id", `glass-dome-${idx}`);
+        glass.setAttribute("position", "0 1.42 0");
+        glass.setAttribute("radius", "0.45");
+        glass.setAttribute("height", "1.12");
+        glass.setAttribute(
+          "material",
+          "color: #7ee8ff; emissive: #00b8d4; emissiveIntensity: 0.25; transparent: true; opacity: 0.48; metalness: 0.75; roughness: 0.12"
+        );
+        group.appendChild(glass);
+
+        // Anello inferiore della capsula di vetro
+        const bottomCap = document.createElement("a-torus");
+        bottomCap.setAttribute("position", "0 0.88 0");
+        bottomCap.setAttribute("rotation", "90 0 0");
+        bottomCap.setAttribute("radius", "0.45");
+        bottomCap.setAttribute("radius-tubular", "0.022");
+        bottomCap.setAttribute("material", "color: #00f3ff; emissive: #00f3ff; emissiveIntensity: 2.0");
+        group.appendChild(bottomCap);
+
+        // Anello superiore luminoso della capsula sigillante
+        const topCap = document.createElement("a-torus");
+        topCap.setAttribute("position", "0 1.98 0");
+        topCap.setAttribute("rotation", "90 0 0");
+        topCap.setAttribute("radius", "0.45");
+        topCap.setAttribute("radius-tubular", "0.022");
+        topCap.setAttribute("material", "color: #39ff14; emissive: #39ff14; emissiveIntensity: 2.2");
+        group.appendChild(topCap);
+      });
+    }
+
+    function buildInteractiveModules() {
+      const container = document.getElementById("modules-container");
+      if (!container) return;
+      container.innerHTML = "";
+
+      MODULE_LAYOUTS.forEach((layout, idx) => {
+        const [px, py, pz] = layout.pos.split(" ").map(Number);
+
+        const group = document.createElement("a-entity");
+        group.setAttribute("id", `module-group-${idx}`);
+        group.setAttribute("position", `${px} 0 ${pz}`);
+
+        // Piedistallo cilindrico sotto la gemma (verrà colorato fluo alla risposta!)
+        const pedestal = document.createElement("a-cylinder");
+        pedestal.setAttribute("id", `module-pedestal-${idx}`);
+        pedestal.setAttribute("position", "0 0.45 0");
+        pedestal.setAttribute("radius", "0.42");
+        pedestal.setAttribute("height", "0.9");
+        pedestal.setAttribute("color", "#0c152e");
+        pedestal.setAttribute("material", "metalness: 0.85; roughness: 0.25");
+        group.appendChild(pedestal);
+
+        // Anello neon alla base
+        const ring = document.createElement("a-ring");
+        ring.setAttribute("id", `module-ring-${idx}`);
+        ring.setAttribute("position", "0 0.02 0");
+        ring.setAttribute("rotation", "-90 0 0");
+        ring.setAttribute("radius-inner", "0.48");
+        ring.setAttribute("radius-outer", "0.60");
+        ring.setAttribute(
+          "material",
+          `color: ${layout.color}; emissive: ${layout.color}; emissiveIntensity: 2`
+        );
+        group.appendChild(ring);
+
+        // Cristallo poligonale interattivo
+        const crystal = document.createElement(`a-${layout.shape}`);
+        crystal.setAttribute("id", `module-crystal-${idx}`);
+        crystal.setAttribute("class", "clickable");
+        crystal.setAttribute("position", `0 ${py} 0`);
+        crystal.setAttribute("radius", "0.34");
+        if (layout.shape === "box") {
+          crystal.setAttribute("width", "0.48");
+          crystal.setAttribute("height", "0.48");
+          crystal.setAttribute("depth", "0.48");
+        }
+        crystal.setAttribute(
+          "material",
+          `color: ${layout.color}; emissive: ${layout.color}; emissiveIntensity: 1.8; wireframe: false`
+        );
+        crystal.setAttribute(
+          "animation",
+          `property: rotation; to: 0 360 0; loop: true; dur: ${4500 + idx * 300}; easing: linear`
+        );
+        crystal.setAttribute(
+          "animation__float",
+          `property: position; dir: alternate; to: 0 ${py + 0.16} 0; loop: true; dur: ${1600 + idx * 120}; easing: easeInOutSine`
+        );
+
+        // Evento click (PC & Meta Quest 2)
+        crystal.addEventListener("click", (evt) => {
+          evt.stopPropagation();
+          if (gameState.activeModuleIndex === null) {
+            openQuizModal(idx);
+          }
+        });
+
+        // Effetto hover con illuminazione mirino
+        crystal.addEventListener("mouseenter", () => {
+          crystal.setAttribute("scale", "1.24 1.24 1.24");
+          const reticle = document.getElementById("center-reticle");
+          if (reticle) reticle.setAttribute("material", "color", "#39ff14");
+        });
+        crystal.addEventListener("mouseleave", () => {
+          crystal.setAttribute("scale", "1 1 1");
+          const reticle = document.getElementById("center-reticle");
+          if (reticle) reticle.setAttribute("material", "color", "#00f3ff");
+        });
+
+        group.appendChild(crystal);
+
+        // Etichetta fluttuante con numero modulo (NODO 01 - NODO 10)
+        const label = document.createElement("a-text");
+        label.setAttribute("id", `module-label-${idx}`);
+        label.setAttribute("value", `NODO ${String(idx + 1).padStart(2, "0")}`);
+        label.setAttribute("position", `0 ${py + 0.62} 0`);
+        label.setAttribute("align", "center");
+        label.setAttribute("color", layout.color);
+        label.setAttribute("width", "4.2");
+        label.setAttribute("look-at", "#player-camera");
+        group.appendChild(label);
+
+        container.appendChild(group);
+      });
+    }
+
+    function openQuizModal(idx) {
+      audioEngine.playSelect();
+      gameState.activeModuleIndex = idx;
+      gameState.isAnsweringLock = false;
+      const q = activeQuestions[idx];
+
+      if (isVRModeActive()) {
+        // MODALITÀ IMMERSIVA META QUEST 2: Pannello Olografico 3D
+        const panel = document.getElementById("vr-quiz-panel");
+        document.getElementById("quiz-header").setAttribute("value", q.displayTitle);
+        document.getElementById("quiz-question").setAttribute("value", q.question);
+
+        q.options.forEach((optText, i) => {
+          const textEl = document.getElementById(`opt-text-${i}`);
+          const btnPlane = document.getElementById(`opt-plane-${i}`);
+          textEl.setAttribute("value", optText);
+          btnPlane.setAttribute("color", "#0b1d3a");
+        });
+
+        const fb = document.getElementById("quiz-feedback");
+        if (gameState.solved[idx]) {
+          fb.setAttribute("value", "NODO GIA' ATTIVATO! Puoi comunque ripassare.");
+          fb.setAttribute("color", "#39ff14");
+        } else {
+          fb.setAttribute("value", "Punta con il laser la risposta esatta");
+          fb.setAttribute("color", "#00f3ff");
+        }
+
+        setVRPanelInteractable(true);
+        panel.setAttribute("visible", true);
+      } else {
+        // MODALITÀ DESKTOP / ANTEPRIMA: Modale HTML5 a schermo intero senza interferenze A-Frame
+        setCameraLookEnabled(false);
+        const dtModal = document.getElementById("desktop-quiz-modal");
+        document.getElementById("dt-quiz-header").textContent = q.displayTitle;
+        document.getElementById("dt-quiz-question").textContent = q.question;
+
+        q.options.forEach((optText, i) => {
+          const btn = document.getElementById(`dt-opt-${i}`);
+          btn.textContent = optText;
+          btn.className = "desktop-opt-btn";
+        });
+
+        const dtFb = document.getElementById("dt-quiz-feedback");
+        if (gameState.solved[idx]) {
+          dtFb.textContent = "NODO GIÀ ATTIVATO! Puoi comunque ripassare la domanda.";
+          dtFb.style.color = "#39ff14";
+          dtFb.style.borderColor = "#39ff14";
+        } else {
+          dtFb.textContent = "Clicca sulla risposta esatta per stabilizzare il nodo energetico.";
+          dtFb.style.color = "#00f3ff";
+          dtFb.style.borderColor = "rgba(0, 243, 255, 0.35)";
+        }
+
+        dtModal.style.display = "flex";
+      }
+    }
+
+    function closeQuizModal() {
+      // Chiudi pannello VR 3D
+      const vrPanel = document.getElementById("vr-quiz-panel");
+      if (vrPanel) vrPanel.setAttribute("visible", false);
+      setVRPanelInteractable(false);
+
+      // Chiudi modale HTML5 Desktop e riabilita visuale mouse
+      const dtModal = document.getElementById("desktop-quiz-modal");
+      if (dtModal) dtModal.style.display = "none";
+      setCameraLookEnabled(true);
+
+      gameState.activeModuleIndex = null;
+      gameState.isAnsweringLock = false;
+    }
+
+    function handleAnswerClick(optionIdx) {
+      const idx = gameState.activeModuleIndex;
+      if (idx === null || gameState.isAnsweringLock) return;
+
+      const q = activeQuestions[idx];
+      const isCorrect = optionIdx === q.correctIndex;
+
+      gameState.attempts++;
+      document.getElementById("hud-attempts").textContent = gameState.attempts;
+
+      if (isCorrect) {
+        // RISPOSTA ESATTA!
+        gameState.isAnsweringLock = true;
+        gameState.streak++;
+        document.getElementById("hud-streak").textContent = `${gameState.streak}x 🔥`;
+        audioEngine.playSuccess();
+
+        const praise = BITBOT_PRAISES[Math.floor(Math.random() * BITBOT_PRAISES.length)];
+        showBitBotMessage(praise);
+
+        // Aggiorna UI VR 3D
+        const vrFb = document.getElementById("quiz-feedback");
+        const vrPlane = document.getElementById(`opt-plane-${optionIdx}`);
+        if (vrPlane) vrPlane.setAttribute("color", "#145c26");
+        if (vrFb) {
+          vrFb.setAttribute("value", "RISPOSTA ESATTA! Nodo energetico stabilizzato.");
+          vrFb.setAttribute("color", "#39ff14");
+        }
+
+        // Aggiorna UI Desktop HTML5
+        const dtBtn = document.getElementById(`dt-opt-${optionIdx}`);
+        const dtFb = document.getElementById("dt-quiz-feedback");
+        if (dtBtn) dtBtn.classList.add("correct");
+        if (dtFb) {
+          dtFb.textContent = "RISPOSTA ESATTA! Cilindro energetico acceso!";
+          dtFb.style.color = "#39ff14";
+          dtFb.style.borderColor = "#39ff14";
+        }
+
+        if (!gameState.solved[idx]) {
+          gameState.solved[idx] = true;
+          markModuleAsSolved(idx);
+          updateProgress();
+        }
+
+        // Chiudi automaticamente la domanda dopo 2 secondi dalla risposta esatta
+        setTimeout(() => {
+          closeQuizModal();
+        }, 2000);
+      } else {
+        // RISPOSTA ERRATA
+        gameState.streak = 0;
+        document.getElementById("hud-streak").textContent = "0x 🔥";
+        audioEngine.playError();
+
+        const enc = BITBOT_ENCOURAGEMENTS[Math.floor(Math.random() * BITBOT_ENCOURAGEMENTS.length)];
+        showBitBotMessage(enc);
+
+        // Aggiorna UI VR 3D
+        const vrFb = document.getElementById("quiz-feedback");
+        const vrPlane = document.getElementById(`opt-plane-${optionIdx}`);
+        if (vrPlane) vrPlane.setAttribute("color", "#5c1428");
+        if (vrFb) {
+          vrFb.setAttribute("value", `NON PROPRIO! ${q.hint}`);
+          vrFb.setAttribute("color", "#ff0055");
+        }
+
+        // Aggiorna UI Desktop HTML5
+        const dtBtn = document.getElementById(`dt-opt-${optionIdx}`);
+        const dtFb = document.getElementById("dt-quiz-feedback");
+        if (dtBtn) dtBtn.classList.add("wrong");
+        if (dtFb) {
+          dtFb.textContent = `NON PROPRIO! ${q.hint}`;
+          dtFb.style.color = "#ff4d88";
+          dtFb.style.borderColor = "#ff0055";
+        }
+      }
+    }
+
+    function markModuleAsSolved(idx) {
+      const crystal = document.getElementById(`module-crystal-${idx}`);
+      const pedestal = document.getElementById(`module-pedestal-${idx}`);
+      const ring = document.getElementById(`module-ring-${idx}`);
+      const label = document.getElementById(`module-label-${idx}`);
+      const fluoColor = FLUO_CYLINDER_COLORS[idx % FLUO_CYLINDER_COLORS.length];
+
+      // Colora il cilindro sotto la gemma di un colore fluo acceso e luminoso
+      if (pedestal) {
+        pedestal.setAttribute(
+          "material",
+          `color: ${fluoColor}; emissive: ${fluoColor}; emissiveIntensity: 1.9; metalness: 0.2; roughness: 0.2`
+        );
+      }
+
+      crystal.setAttribute(
+        "material",
+        "color: #39ff14; emissive: #39ff14; emissiveIntensity: 2.2"
+      );
+      ring.setAttribute(
+        "material",
+        `color: ${fluoColor}; emissive: ${fluoColor}; emissiveIntensity: 2.4`
+      );
+      label.setAttribute("value", `NODO ${String(idx + 1).padStart(2, "0")} OK`);
+      label.setAttribute("color", "#39ff14");
+    }
+
+    function updateProgress() {
+      const solvedCount = gameState.solved.filter(Boolean).length;
+      document.getElementById("hud-score").textContent = `${solvedCount} / 10`;
+
+      const doorStatus = document.getElementById("door-status-text");
+      const doorSub = document.getElementById("door-sub-text");
+
+      if (solvedCount < 10) {
+        doorStatus.setAttribute("value", `SERRANDA BLOCCATA: ${solvedCount} / 10`);
+        doorStatus.setAttribute("color", "#ffaa00");
+        doorSub.setAttribute("value", `MANCANO ANCORA ${10 - solvedCount} MODULI DA ATTIVARE`);
+      } else if (!gameState.doorOpened) {
+        // TUTTE E 10 LE DOMANDE RISOLTE -> SOLLEVAMENTO SERRANDA, SCHERMO ASTRONAVE, LED E CAPSULE!
+        gameState.doorOpened = true;
+        stopMissionTimer();
+        audioEngine.switchToVictoryMusic();
+        startVictoryCeilingLeds();
+        sealAllCrystalsInGlass();
+        showBitBotMessage("VITTORIA! GUARDA LO SCHERMO DELL'ASTRONAVE IN FONDO! 🎉");
+
+        doorStatus.setAttribute("value", "SERRANDA APERTA: 10 / 10!");
+        doorStatus.setAttribute("color", "#39ff14");
+        doorSub.setAttribute("value", "MISSIONE COMPLETATA - LICEO SCIENTIFICO PASOLINI");
+
+        const finalTime = formatTime(gameState.elapsedSeconds);
+        const accuracy = Math.max(10, Math.round((10 / Math.max(10, gameState.attempts)) * 100));
+
+        const bigScore = document.getElementById("victory-big-score");
+        if (bigScore) {
+          bigScore.setAttribute("value", `PUNTEGGIO: 10 / 10 (${accuracy}%)`);
+        }
+
+        const statsMsg = document.getElementById("victory-stats-msg");
+        if (statsMsg) {
+          statsMsg.setAttribute("value", `Tempo: ${finalTime} | Tentativi totali: ${gameState.attempts}`);
+        }
+
+        // 1. Posiziona e ruota SUBITO il giocatore frontalmente verso la serranda e il maxischermo
+        const rig = document.getElementById("player-rig");
+        const cam = document.getElementById("player-camera");
+        if (rig) {
+          rig.setAttribute("position", "0 0 1.4");
+          rig.setAttribute("rotation", "0 0 0");
+        }
+        if (cam) {
+          // Forza l'orientamento frontale verso l'asse -Z (dove si trova la serranda)
+          const lookCtrl = cam.components["look-controls"];
+          if (lookCtrl) {
+            if (lookCtrl.yawObject) lookCtrl.yawObject.rotation.y = 0;
+            if (lookCtrl.pitchObject) lookCtrl.pitchObject.rotation.x = 0;
+          }
+          cam.object3D.rotation.set(0, 0, 0);
+          cam.setAttribute("rotation", "0 0 0");
+        }
+
+        // 2. Dopo un brevissimo istante in cui la visuale è centrata, solleva la serranda e avvia la scritta a scorrimento
+        setTimeout(() => {
+          const shutter = document.getElementById("shutter-gate");
+          if (shutter) {
+            shutter.setAttribute(
+              "animation",
+              "property: position; to: 0 5.65 -8.9; dur: 2500; easing: easeInOutQuad"
+            );
+          }
+
+          const scrollingText = document.getElementById("victory-scrolling-text");
+          if (scrollingText) {
+            scrollingText.setAttribute("position", "4.2 0 0");
+            scrollingText.setAttribute(
+              "animation",
+              "property: position; from: 4.2 0 0; to: -18.5 0 0; dur: 11000; loop: true; easing: linear"
+            );
+          }
+        }, 450);
+
+        // Nasconde eventuali banner in primo piano lasciando protagonista solo il maxischermo dietro la serranda
+        const banner = document.getElementById("desktop-victory-banner");
+        if (banner) {
+          banner.style.display = "none";
+        }
+      }
+    }
+
+    function returnToStartScreen(evt) {
+      resetGame(evt, true);
+    }
+
+    function resetGame(evt, goToStartOverlay = true) {
+      if (evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
+      audioEngine.playSelect();
+      audioEngine.switchToNormalMusic();
+      stopVictoryCeilingLeds();
+
+      // Estrai 10 nuove domande casuali dal pool di 30
+      activeQuestions = pickRandom10Questions();
+
+      gameState.solved.fill(false);
+      gameState.activeModuleIndex = null;
+      gameState.attempts = 0;
+      gameState.streak = 0;
+      gameState.doorOpened = false;
+      gameState.isAnsweringLock = false;
+
+      document.getElementById("hud-score").textContent = "0 / 10";
+      document.getElementById("hud-attempts").textContent = "0";
+      document.getElementById("hud-streak").textContent = "0x 🔥";
+      const banner = document.getElementById("desktop-victory-banner");
+      if (banner) banner.style.display = "none";
+      closeQuizModal();
+
+      // Riporta giocatore e visuale alla posizione iniziale
+      const rig = document.getElementById("player-rig");
+      const cam = document.getElementById("player-camera");
+      if (rig) {
+        rig.setAttribute("position", "0 0 5.5");
+        rig.setAttribute("rotation", "0 0 0");
+      }
+      if (cam) {
+        const lookCtrl = cam.components["look-controls"];
+        if (lookCtrl) {
+          if (lookCtrl.yawObject) lookCtrl.yawObject.rotation.y = 0;
+          if (lookCtrl.pitchObject) lookCtrl.pitchObject.rotation.x = 0;
+        }
+        cam.object3D.rotation.set(0, 0, 0);
+        cam.setAttribute("rotation", "0 0 0");
+      }
+
+      // Riabbassa la serranda frontale e ferma la scritta a scorrimento
+      const shutter = document.getElementById("shutter-gate");
+      if (shutter) {
+        shutter.removeAttribute("animation");
+        shutter.setAttribute("position", "0 1.9 -8.9");
+      }
+
+      const scrollingText = document.getElementById("victory-scrolling-text");
+      if (scrollingText) {
+        scrollingText.removeAttribute("animation");
+        scrollingText.setAttribute("position", "4.2 0 0");
+      }
+
+      const doorStatus = document.getElementById("door-status-text");
+      const doorSub = document.getElementById("door-sub-text");
+      doorStatus.setAttribute("value", "SERRANDA BLOCCATA: 0 / 10");
+      doorStatus.setAttribute("color", "#ff0055");
+      doorSub.setAttribute("value", "ATTIVA TUTTI I 10 MODULI PER SOLLEVARE LA PARETE");
+
+      buildInteractiveModules();
+
+      if (goToStartOverlay) {
+        stopMissionTimer();
+        document.getElementById("pc-hud").style.display = "none";
+        document.getElementById("crosshair-hint").style.display = "none";
+        const toast = document.getElementById("bitbot-toast");
+        if (toast) toast.style.display = "none";
+        document.getElementById("start-overlay").style.display = "flex";
+      } else {
+        startMissionTimer();
+        showBitBotMessage("Nuova partita avviata con 10 nuove sfide casuali! 🚀");
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 6. INIZIALIZZAZIONE EVENTI UI E SCENA
+     * =========================================================================
+     */
+    window.addEventListener("DOMContentLoaded", () => {
+      activeQuestions = pickRandom10Questions();
+      generateNeonTextures();
+      createStarfield();
+      createCeilingLeds();
+      buildInteractiveModules();
+
+      // Mantieni HUD e modali sempre visibili anche quando A-Frame attiva lo schermo intero (Fullscreen)
+      const moveOverlaysIntoFullscreenTarget = () => {
+        const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+        const targetParent = fsEl || document.body;
+        ["pc-hud", "bitbot-toast", "crosshair-hint", "desktop-quiz-modal", "start-overlay"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el && el.parentElement !== targetParent) {
+            targetParent.appendChild(el);
+          }
+        });
+      };
+      document.addEventListener("fullscreenchange", moveOverlaysIntoFullscreenTarget);
+      document.addEventListener("webkitfullscreenchange", moveOverlaysIntoFullscreenTarget);
+
+      // Sblocca l'audio al primo tocco o clic ovunque nella pagina
+      const unlockAudioOnGesture = () => {
+        audioEngine.init();
+      };
+      window.addEventListener("pointerdown", unlockAudioOnGesture, { once: true });
+      window.addEventListener("keydown", unlockAudioOnGesture, { once: true });
+
+      // Collegamento click ai 3 bottoni opzione nel pannello 3D VR (Meta Quest 2)
+      [0, 1, 2].forEach((i) => {
+        const vrPlane = document.getElementById(`opt-plane-${i}`);
+        if (vrPlane) {
+          vrPlane.addEventListener("click", (evt) => {
+            evt.stopPropagation();
+            handleAnswerClick(i);
+          });
+        }
+
+        // Collegamento robusto pointerdown + click per i pulsanti HTML5 Desktop
+        const dtBtn = document.getElementById(`dt-opt-${i}`);
+        if (dtBtn) {
+          const triggerAnswer = (evt) => {
+            evt.preventDefault();
+            evt.stopPropagation();
+            handleAnswerClick(i);
+          };
+          dtBtn.addEventListener("pointerdown", triggerAnswer);
+          dtBtn.addEventListener("click", triggerAnswer);
+        }
+      });
+
+      // Chiusura pannello VR 3D
+      const closeVrPlane = document.getElementById("close-plane-vr");
+      if (closeVrPlane) {
+        closeVrPlane.addEventListener("click", (evt) => {
+          evt.stopPropagation();
+          closeQuizModal();
+        });
+      }
+
+      // Chiusura modale HTML5 Desktop (pulsante X e clic fuori dalla card)
+      const dtCloseBtn = document.getElementById("dt-btn-close");
+      if (dtCloseBtn) {
+        const triggerClose = (evt) => {
+          evt.preventDefault();
+          evt.stopPropagation();
+          closeQuizModal();
+        };
+        dtCloseBtn.addEventListener("pointerdown", triggerClose);
+        dtCloseBtn.addEventListener("click", triggerClose);
+      }
+
+      const dtModalBackdrop = document.getElementById("desktop-quiz-modal");
+      if (dtModalBackdrop) {
+        dtModalBackdrop.addEventListener("pointerdown", (evt) => {
+          if (evt.target === dtModalBackdrop) {
+            evt.stopPropagation();
+            closeQuizModal();
+          }
+        });
+      }
+
+      // Tasto ESC per chiudere rapidamente la domanda su PC
+      window.addEventListener("keydown", (evt) => {
+        if (evt.key === "Escape" && gameState.activeModuleIndex !== null) {
+          closeQuizModal();
+        }
+      });
+
+      // Pulsante sul maxischermo dietro la serranda per avviare una nuova missione
+      const screenReplayBox = document.getElementById("screen-replay-box");
+      if (screenReplayBox) {
+        screenReplayBox.addEventListener("click", (evt) => {
+          evt.stopPropagation();
+          resetGame(evt);
+        });
+      }
+
+      // Pulsanti Gioca di Nuovo / Riavvia (sia su HUD che Banner Desktop)
+      const hudResetBtn = document.getElementById("btn-reset-hud");
+      if (hudResetBtn) {
+        hudResetBtn.addEventListener("pointerdown", resetGame);
+        hudResetBtn.addEventListener("click", resetGame);
+      }
+
+      const dtReplayBtn = document.getElementById("dt-btn-replay");
+      if (dtReplayBtn) {
+        dtReplayBtn.addEventListener("pointerdown", resetGame);
+        dtReplayBtn.addEventListener("click", resetGame);
+      }
+
+      // Pulsante Start Missione
+      const startBtn = document.getElementById("btn-start");
+      const startMissionHandler = (evt) => {
+        if (evt) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+        document.getElementById("start-overlay").style.display = "none";
+        document.getElementById("pc-hud").style.display = "flex";
+        document.getElementById("crosshair-hint").style.display = "block";
+        audioEngine.startMusic();
+        audioEngine.playSelect();
+        startMissionTimer();
+        showBitBotMessage("Benvenuto sull'astronave Pasolini! Trova i 10 nodi neon!");
+      };
+      startBtn.addEventListener("click", startMissionHandler);
+
+      // Toggle Musica
+      const audioBtn = document.getElementById("btn-audio-toggle");
+      audioBtn.addEventListener("click", () => {
+        audioEngine.startMusic();
+        const active = audioEngine.toggleMute();
+        audioBtn.textContent = active ? "🔊 MUSICA: ON" : "🔇 MUSICA: OFF";
+      });
+    });
+  </script>
+</body>
+</html>
