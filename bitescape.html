@@ -1393,6 +1393,7 @@
       startTime: null,
       timerInterval: null,
       completed: false,
+      isClosingSuccess: false,
       autoCloseTimeout: null
     };
 
@@ -1766,7 +1767,8 @@
         gameState.combo++;
         updateProgressHUD();
 
-        const isLastQuestion = gameState.solved.filter(Boolean).length === 10;
+        const solvedNow = gameState.solved.filter(Boolean).length;
+        const isLastQuestion = solvedNow === 10;
         gameState.isClosingSuccess = true;
 
         gameState.autoCloseTimeout = setTimeout(() => {
@@ -1830,80 +1832,73 @@
 
     function checkVictoryCondition() {
       const solvedCount = gameState.solved.filter(Boolean).length;
-      if (solvedCount === 10 && !gameState.completed) {
-        gameState.completed = true;
-        stopMissionTimer();
+      if (solvedCount < 10 || gameState.completed) return;
 
-        const elapsedStr = gameState.startTime ? formatTime(Date.now() - gameState.startTime) : "00:00";
-        const accuracy = Math.min(100, Math.round((10 / Math.max(10, gameState.attempts)) * 100));
+      gameState.completed = true;
+      stopMissionTimer();
 
-        // 1. Musica celebrativa di vittoria
-        try {
-          audioEngine.switchToVictoryMusic();
-        } catch (e) {}
+      const elapsedStr = gameState.startTime ? formatTime(Date.now() - gameState.startTime) : "00:00";
+      const accuracy = Math.min(100, Math.round((10 / Math.max(10, gameState.attempts)) * 100));
 
-        // 2. LED lampeggianti sul soffitto
-        try {
-          createVictoryCeilingLEDs();
-        } catch (e) {}
+      // 1. Musica celebrativa di vittoria
+      try {
+        audioEngine.switchToVictoryMusic();
+      } catch (e) {}
 
-        // 3. Cilindri trasparenti attorno alle 10 gemme
-        try {
-          sealAllGemsInGlassCylinders();
-        } catch (e) {}
+      // 2. LED lampeggianti sul soffitto
+      try {
+        createVictoryCeilingLEDs();
+      } catch (e) {}
 
-        // 4. Aggiorna i testi sul maxischermo
-        const bigScore = document.getElementById("victory-big-score");
-        if (bigScore) {
-          bigScore.setAttribute("value", `PUNTEGGIO FINALE: 10 / 10 (${accuracy}%)`);
+      // 3. Cilindri trasparenti attorno alle 10 gemme
+      try {
+        sealAllGemsInGlassCylinders();
+      } catch (e) {}
+
+      // 4. Aggiorna i testi sul maxischermo
+      const bigScore = document.getElementById("victory-big-score");
+      if (bigScore) {
+        bigScore.setAttribute("value", `PUNTEGGIO FINALE: 10 / 10 (${accuracy}%)`);
+      }
+      const statsMsg = document.getElementById("victory-stats-msg");
+      if (statsMsg) {
+        statsMsg.setAttribute("value", `Tempo: ${elapsedStr} | Precisione: ${accuracy}%`);
+      }
+
+      // 5. Ruota automaticamente il giocatore frontalmente verso la serranda
+      const rig = document.getElementById("player-rig");
+      const cam = document.getElementById("player-camera");
+      setCameraLookEnabled(false);
+
+      if (rig && rig.object3D) {
+        rig.object3D.position.set(0, 0, 1.4);
+        rig.object3D.rotation.set(0, 0, 0);
+      }
+
+      if (cam && cam.object3D) {
+        const lookCtrl = cam.components && cam.components["look-controls"];
+        if (lookCtrl) {
+          if (lookCtrl.yawObject) lookCtrl.yawObject.rotation.y = 0;
+          if (lookCtrl.pitchObject) lookCtrl.pitchObject.rotation.x = 0;
         }
-        const statsMsg = document.getElementById("victory-stats-msg");
-        if (statsMsg) {
-          statsMsg.setAttribute("value", `Tempo: ${elapsedStr} | Precisione: ${accuracy}%`);
+        cam.object3D.rotation.set(0, 0, 0);
+
+        if (rig && rig.object3D && typeof THREE !== "undefined") {
+          const worldDir = new THREE.Vector3();
+          cam.object3D.getWorldDirection(worldDir);
+          const currentYaw = Math.atan2(-worldDir.x, -worldDir.z);
+          rig.object3D.rotation.y = -currentYaw;
         }
+      }
 
-        // 5. Ruota automaticamente il giocatore frontalmente verso la serranda (anche con giroscopio)
-        const rig = document.getElementById("player-rig");
-        const cam = document.getElementById("player-camera");
-        setCameraLookEnabled(false);
-
-        if (rig) {
-          rig.setAttribute("position", "0 0 1.4");
-          if (rig.object3D) {
-            rig.object3D.position.set(0, 0, 1.4);
-            rig.object3D.rotation.set(0, 0, 0);
-          }
-        }
-
-        if (cam) {
-          const lookCtrl = cam.components && cam.components["look-controls"];
-          if (lookCtrl) {
-            if (lookCtrl.yawObject) lookCtrl.yawObject.rotation.y = 0;
-            if (lookCtrl.pitchObject) lookCtrl.pitchObject.rotation.x = 0;
-          }
-          if (cam.object3D) {
-            cam.object3D.rotation.set(0, 0, 0);
-          }
-
-          if (rig && rig.object3D && cam.object3D && typeof THREE !== "undefined") {
-            const worldDir = new THREE.Vector3();
-            cam.object3D.getWorldDirection(worldDir);
-            const currentYaw = Math.atan2(-worldDir.x, -worldDir.z);
-            rig.object3D.rotation.y = -currentYaw;
-          }
-        }
-
-        // 6. Solleva la serranda rivelando il maxischermo
-        const shutter = document.getElementById("shutter-gate");
-        if (shutter) {
-          shutter.removeAttribute("animation");
-          setTimeout(() => {
-            shutter.setAttribute(
-              "animation",
-              "property: position; from: 0 1.9 0.1; to: 0 5.65 0.1; dur: 2400; easing: easeInOutQuad"
-            );
-          }, 150);
-        }
+      // 6. Solleva immediatamente la serranda rivelando il maxischermo
+      const shutter = document.getElementById("shutter-gate");
+      if (shutter) {
+        shutter.removeAttribute("animation");
+        shutter.setAttribute(
+          "animation",
+          "property: position; to: 0 5.65 0.1; dur: 2400; easing: easeInOutQuad"
+        );
       }
     }
 
