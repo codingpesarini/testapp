@@ -1040,10 +1040,22 @@
     let activeQuestions = [];
 
     function pickRandomQuestions(pool, count) {
-      const copy = pool.map(item => ({
-        ...item,
-        options: [...item.options]
-      }));
+      const copy = pool.map(item => {
+        // Mescola le 3 opzioni mantenendo traccia di quale sia la risposta corretta
+        const indexedOptions = item.options.map((text, idx) => ({
+          text,
+          isCorrect: idx === item.correct
+        }));
+        for (let i = indexedOptions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
+        }
+        return {
+          ...item,
+          options: indexedOptions.map(o => o.text),
+          correct: indexedOptions.findIndex(o => o.isCorrect)
+        };
+      });
       for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [copy[i], copy[j]] = [copy[j], copy[i]];
@@ -1795,12 +1807,18 @@
       const doorSub = document.getElementById("door-sub-text");
 
       if (solvedCount < 10) {
-        doorStatus.setAttribute("value", `SERRANDA BLOCCATA: ${solvedCount} / 10`);
-        doorStatus.setAttribute("color", solvedCount >= 7 ? "#ffe600" : "#ff0055");
+        if (doorStatus) {
+          doorStatus.setAttribute("value", `SERRANDA BLOCCATA: ${solvedCount} / 10`);
+          doorStatus.setAttribute("color", solvedCount >= 7 ? "#ffe600" : "#ff0055");
+        }
       } else {
-        doorStatus.setAttribute("value", "SERRANDA SBLOCCATA: 10 / 10");
-        doorStatus.setAttribute("color", "#39ff14");
-        doorSub.setAttribute("value", "APERTURA SCHERMO PRINCIPALE IN CORSO!");
+        if (doorStatus) {
+          doorStatus.setAttribute("value", "SERRANDA SBLOCCATA: 10 / 10");
+          doorStatus.setAttribute("color", "#39ff14");
+        }
+        if (doorSub) {
+          doorSub.setAttribute("value", "APERTURA SCHERMO PRINCIPALE IN CORSO!");
+        }
       }
     }
 
@@ -1814,13 +1832,19 @@
         const accuracy = Math.min(100, Math.round((10 / Math.max(10, gameState.attempts)) * 100));
 
         // 1. Musica celebrativa di vittoria
-        audioEngine.switchToVictoryMusic();
+        try {
+          audioEngine.switchToVictoryMusic();
+        } catch (e) {}
 
         // 2. LED lampeggianti sul soffitto
-        createVictoryCeilingLEDs();
+        try {
+          createVictoryCeilingLEDs();
+        } catch (e) {}
 
         // 3. Cilindri trasparenti attorno alle 10 gemme
-        sealAllGemsInGlassCylinders();
+        try {
+          sealAllGemsInGlassCylinders();
+        } catch (e) {}
 
         // 4. Aggiorna i testi sul maxischermo
         const bigScore = document.getElementById("victory-big-score");
@@ -1839,20 +1863,24 @@
 
         if (rig) {
           rig.setAttribute("position", "0 0 1.4");
-          rig.object3D.position.set(0, 0, 1.4);
-          rig.object3D.rotation.set(0, 0, 0);
+          if (rig.object3D) {
+            rig.object3D.position.set(0, 0, 1.4);
+            rig.object3D.rotation.set(0, 0, 0);
+          }
         }
 
         if (cam) {
-          const lookCtrl = cam.components["look-controls"];
+          const lookCtrl = cam.components && cam.components["look-controls"];
           if (lookCtrl) {
             if (lookCtrl.yawObject) lookCtrl.yawObject.rotation.y = 0;
             if (lookCtrl.pitchObject) lookCtrl.pitchObject.rotation.x = 0;
           }
-          cam.object3D.rotation.set(0, 0, 0);
+          if (cam.object3D) {
+            cam.object3D.rotation.set(0, 0, 0);
+          }
           cam.setAttribute("rotation", "0 0 0");
 
-          if (rig) {
+          if (rig && rig.object3D && cam.object3D && typeof THREE !== "undefined") {
             const worldDir = new THREE.Vector3();
             cam.object3D.getWorldDirection(worldDir);
             const currentYaw = Math.atan2(-worldDir.x, -worldDir.z);
@@ -1861,15 +1889,16 @@
         }
 
         // 6. Solleva la serranda rivelando il maxischermo
-        setTimeout(() => {
-          const shutter = document.getElementById("shutter-gate");
-          if (shutter) {
+        const shutter = document.getElementById("shutter-gate");
+        if (shutter) {
+          shutter.removeAttribute("animation");
+          setTimeout(() => {
             shutter.setAttribute(
               "animation",
-              "property: position; to: 0 5.65 0.1; dur: 2400; easing: easeInOutQuad"
+              "property: position; from: 0 1.9 0.1; to: 0 5.65 0.1; dur: 2400; easing: easeInOutQuad"
             );
-          }
-        }, 400);
+          }, 150);
+        }
       }
     }
 
