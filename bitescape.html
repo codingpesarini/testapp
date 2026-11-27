@@ -1451,7 +1451,7 @@
     function setCameraLookEnabled(enabled) {
       const cam = document.getElementById("player-camera");
       if (cam) {
-        cam.setAttribute("look-controls", `enabled: ${enabled}; pointerLockEnabled: false`);
+        cam.setAttribute("look-controls", "enabled", enabled);
       }
     }
 
@@ -1618,7 +1618,7 @@
     }
 
     function openQuizForModule(idx) {
-      if (gameState.completed) return;
+      if (gameState.completed || gameState.isClosingSuccess) return;
       clearTimeout(gameState.autoCloseTimeout);
 
       if (gameState.solved[idx]) {
@@ -1683,6 +1683,7 @@
 
     function closeQuizPanel() {
       clearTimeout(gameState.autoCloseTimeout);
+      gameState.isClosingSuccess = false;
       gameState.activeModuleIndex = null;
 
       const vrPanel = document.getElementById("quiz-panel-vr");
@@ -1704,7 +1705,7 @@
 
     function submitAnswer(optionIdx) {
       const idx = gameState.activeModuleIndex;
-      if (idx === null || gameState.solved[idx]) return;
+      if (idx === null || gameState.solved[idx] || gameState.isClosingSuccess) return;
 
       const qData = activeQuestions[idx];
       gameState.attempts++;
@@ -1765,9 +1766,14 @@
         gameState.combo++;
         updateProgressHUD();
 
+        const isLastQuestion = gameState.solved.filter(Boolean).length === 10;
+        gameState.isClosingSuccess = true;
+
         gameState.autoCloseTimeout = setTimeout(() => {
           closeQuizPanel();
-          checkVictoryCondition();
+          if (isLastQuestion) {
+            checkVictoryCondition();
+          }
         }, 2000);
       } else {
         audioEngine.playError();
@@ -1878,7 +1884,6 @@
           if (cam.object3D) {
             cam.object3D.rotation.set(0, 0, 0);
           }
-          cam.setAttribute("rotation", "0 0 0");
 
           if (rig && rig.object3D && cam.object3D && typeof THREE !== "undefined") {
             const worldDir = new THREE.Vector3();
@@ -1904,6 +1909,7 @@
 
     function resetGame(goToStartOverlay = true) {
       clearTimeout(gameState.autoCloseTimeout);
+      gameState.isClosingSuccess = false;
       gameState.solved = new Array(10).fill(false);
       gameState.activeModuleIndex = null;
       gameState.attempts = 0;
