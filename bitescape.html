@@ -4,23 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Starship Pasolini - Escape Room VR | Liceo Scientifico Pasolini di Potenza</title>
-  <!-- Libreria WebXR / Web3D A-Frame -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&display=swap');
+  <meta name="theme-color" content="#03050a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+  <!-- A-Frame (WebXR) incluso nel repository: funziona anche con il Wi-Fi della scuola lento.
+       Se la cartella vendor/ manca, si usa la copia ufficiale online. -->
+  <script src="vendor/aframe-v1.7.1.min.js"></script>
+  <script>
+    if (!window.AFRAME) {
+      document.write('<script src="https://aframe.io/releases/1.7.1/aframe.min.js"><\/script>');
     }
+  </script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
       background-color: #03050a;
-      font-family: 'Rajdhani', sans-serif;
+      font-family: 'Rajdhani', system-ui, sans-serif;
       color: #e0f7ff;
     }
 
@@ -37,6 +43,7 @@
       padding: 20px;
       text-align: center;
       backdrop-filter: blur(8px);
+      overflow-y: auto;
     }
 
     .neon-card {
@@ -47,6 +54,12 @@
       background: rgba(8, 14, 30, 0.92);
       border: 2px solid #00f3ff;
       box-shadow: 0 0 30px rgba(0, 243, 255, 0.35), inset 0 0 25px rgba(255, 0, 234, 0.15);
+      animation: card-glow 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes card-glow {
+      from { box-shadow: 0 0 26px rgba(0, 243, 255, 0.30), inset 0 0 25px rgba(255, 0, 234, 0.12); }
+      to   { box-shadow: 0 0 42px rgba(255, 0, 234, 0.35), inset 0 0 25px rgba(0, 243, 255, 0.18); }
     }
 
     .badge-school {
@@ -102,10 +115,7 @@
       margin-bottom: 4px;
     }
 
-    .control-box p {
-      font-size: 0.94rem;
-      color: #b8e2f8;
-    }
+    .control-box p { font-size: 0.94rem; color: #b8e2f8; }
 
     .btn-neon-start {
       font-family: 'Orbitron', sans-serif;
@@ -123,9 +133,11 @@
       letter-spacing: 1.5px;
     }
 
-    .btn-neon-start:hover {
+    .btn-neon-start:hover,
+    .btn-neon-start:focus-visible {
       transform: scale(1.04);
       box-shadow: 0 0 32px rgba(0, 243, 255, 0.9), 0 0 50px rgba(57, 255, 20, 0.7);
+      outline: none;
     }
 
     /* HUD Superiore */
@@ -157,9 +169,13 @@
       backdrop-filter: blur(4px);
     }
 
-    .hud-score {
-      color: #39ff14;
-      font-weight: 700;
+    .hud-score { color: #39ff14; font-weight: 700; }
+
+    .combo-bump { animation: combo-bump 0.45s ease-out; display: inline-block; }
+    @keyframes combo-bump {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.6); color: #ffffff; text-shadow: 0 0 12px #ffe600; }
+      100% { transform: scale(1); }
     }
 
     .hud-btn {
@@ -175,10 +191,12 @@
       white-space: nowrap;
     }
 
-    .hud-btn:hover {
+    .hud-btn:hover,
+    .hud-btn:focus-visible {
       background: #ff00ea;
       color: #03050a;
       box-shadow: 0 0 15px #ff00ea;
+      outline: none;
     }
 
     /* Controlli touch virtuali AVANTI / INDIETRO */
@@ -251,6 +269,12 @@
       max-width: 90vw;
     }
 
+    #bitbot-toast.show { animation: toast-in 0.35s ease-out; }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translate(-50%, -12px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
     /* Modale Domande Desktop/Mobile */
     #desktop-quiz-modal {
       position: fixed;
@@ -273,6 +297,12 @@
       padding: 24px 22px;
       box-shadow: 0 0 36px rgba(0, 243, 255, 0.45), inset 0 0 20px rgba(255, 0, 234, 0.12);
       position: relative;
+      animation: card-pop 0.25s ease-out;
+    }
+
+    @keyframes card-pop {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
 
     .dt-quiz-header {
@@ -305,10 +335,8 @@
       cursor: pointer;
     }
 
-    .dt-btn-close:hover {
-      background: #ff0055;
-      color: #ffffff;
-    }
+    .dt-btn-close:hover,
+    .dt-btn-close:focus-visible { background: #ff0055; color: #ffffff; outline: none; }
 
     .dt-question-text {
       font-size: 1.32rem;
@@ -340,9 +368,11 @@
       transition: all 0.16s ease;
     }
 
-    .dt-option-btn:hover {
+    .dt-option-btn:hover:not(:disabled),
+    .dt-option-btn:focus-visible {
       background: rgba(0, 243, 255, 0.22);
       transform: translateX(4px);
+      outline: none;
     }
 
     .dt-option-btn.correct {
@@ -355,6 +385,13 @@
       background: rgba(255, 0, 85, 0.25);
       border-color: #ff0055;
       color: #ff99bb;
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
     }
 
     .dt-feedback {
@@ -364,6 +401,13 @@
       text-align: center;
       padding: 6px 10px;
       border-radius: 10px;
+    }
+
+    .dt-keys-hint {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #7fa6c8;
+      text-align: center;
     }
 
     /* Suggerimento comandi in basso */
@@ -384,21 +428,484 @@
       text-align: center;
     }
 
+    /* Il pulsante VR di A-Frame più grande */
+    .a-enter-vr-button { width: 96px !important; height: 64px !important; background-size: 70% !important; }
+
     @media (max-width: 900px) {
-      #pc-hud {
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-      .hud-pill {
-        padding: 6px 10px;
-        font-size: 0.76rem;
-        gap: 6px;
-      }
-      #crosshair-hint {
-        display: none !important;
-      }
+      #pc-hud { flex-wrap: wrap; gap: 6px; }
+      .hud-pill { padding: 6px 10px; font-size: 0.76rem; gap: 6px; }
+      #crosshair-hint { display: none !important; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .neon-card, .dt-quiz-card, #bitbot-toast.show, .combo-bump, .dt-option-btn.wrong { animation: none !important; }
     }
   </style>
+
+  <script>
+    /* =========================================================================
+     * COMPONENTI 3D (registrati prima che la scena venga creata)
+     * ========================================================================= */
+    (function () {
+      "use strict";
+
+      const FONT_TITLE = "'Orbitron', 'Rajdhani', system-ui, sans-serif";
+      const FONT_BODY = "'Rajdhani', system-ui, sans-serif";
+      const MAX_TEX = 2048;
+
+      function roundRect(ctx, x, y, w, h, r) {
+        r = Math.max(0, Math.min(r, w / 2, h / 2));
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      function wrapLines(ctx, text, maxW) {
+        const out = [];
+        String(text).replace(/\\n/g, "\n").split("\n").forEach((para) => {
+          const words = para.split(" ");
+          let line = "";
+          words.forEach((w) => {
+            const test = line ? line + " " + w : w;
+            if (ctx.measureText(test).width > maxW && line) {
+              out.push(line);
+              line = w;
+            } else {
+              line = test;
+            }
+          });
+          out.push(line);
+        });
+        return out;
+      }
+
+      function makeTexture(canvas) {
+        const t = new THREE.CanvasTexture(canvas);
+        t.colorSpace = THREE.SRGBColorSpace;
+        t.anisotropy = 4;
+        return t;
+      }
+
+      /** Alone luminoso circolare condiviso (per sprite e particelle). */
+      let glowTex = null;
+      function getGlowTexture() {
+        if (glowTex) return glowTex;
+        const c = document.createElement("canvas");
+        c.width = c.height = 128;
+        const g = c.getContext("2d");
+        const grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+        grd.addColorStop(0, "rgba(255,255,255,1)");
+        grd.addColorStop(0.25, "rgba(255,255,255,0.75)");
+        grd.addColorStop(0.6, "rgba(255,255,255,0.18)");
+        grd.addColorStop(1, "rgba(255,255,255,0)");
+        g.fillStyle = grd;
+        g.fillRect(0, 0, 128, 128);
+        glowTex = new THREE.CanvasTexture(c);
+        return glowTex;
+      }
+
+      window.StarshipFX = { roundRect, wrapLines, makeTexture, getGlowTexture, FONT_TITLE, FONT_BODY };
+
+      /* -------------------------------------------------------------------
+       * neon-label: testo 3D disegnato su canvas.
+       * Supporta lettere accentate ed emoji (il font interno di A-Frame no),
+       * effetto neon, sfondo, bordo e — con interactive: true — il
+       * comportamento da pulsante (bordo giallo quando è puntato).
+       * Le misure (size, padding, radius) sono in metri.
+       * ------------------------------------------------------------------- */
+      AFRAME.registerComponent("neon-label", {
+        schema: {
+          text: { default: "" },
+          width: { default: 1 },
+          height: { default: 0.3 },
+          size: { default: 0.1 },
+          color: { default: "#e0f7ff" },
+          glow: { default: "" },
+          font: { default: "body" },
+          weight: { default: "700" },
+          align: { default: "center" },
+          bg: { default: "" },
+          border: { default: "" },
+          radius: { default: 0.06 },
+          padding: { default: 0.05 },
+          lineHeight: { default: 1.18 },
+          interactive: { default: false },
+          hoverColor: { default: "#ffe600" },
+          opacity: { default: 1 }
+        },
+
+        init: function () {
+          const d = this.data;
+          const ppm = Math.min(420, MAX_TEX / d.width, MAX_TEX / d.height);
+          this.ppm = ppm;
+          this.canvas = document.createElement("canvas");
+          this.canvas.width = Math.max(8, Math.round(d.width * ppm));
+          this.canvas.height = Math.max(8, Math.round(d.height * ppm));
+          this.ctx = this.canvas.getContext("2d");
+          this.texture = makeTexture(this.canvas);
+          this.material = new THREE.MeshBasicMaterial({
+            map: this.texture,
+            transparent: true,
+            depthWrite: false,
+            fog: false,
+            toneMapped: false,
+            side: THREE.DoubleSide
+          });
+          this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(d.width, d.height), this.material);
+          this.el.setObject3D("mesh", this.mesh);
+          this.hovered = new Set();
+          this.baseScale = null;
+
+          if (d.interactive) {
+            if (this.el.dataset.interactive !== "false") this.el.classList.add("clickable");
+            this.onEnter = (e) => { this.hovered.add((e.detail && e.detail.cursorEl) || "m"); this.applyHover(); };
+            this.onLeave = (e) => { this.hovered.delete((e.detail && e.detail.cursorEl) || "m"); this.applyHover(); };
+            this.el.addEventListener("mouseenter", this.onEnter);
+            this.el.addEventListener("mouseleave", this.onLeave);
+          }
+          this.onFonts = () => this.draw();
+          window.addEventListener("starship-fonts-ready", this.onFonts);
+        },
+
+        update: function () { this.draw(); },
+
+        remove: function () {
+          window.removeEventListener("starship-fonts-ready", this.onFonts);
+          if (this.onEnter) {
+            this.el.removeEventListener("mouseenter", this.onEnter);
+            this.el.removeEventListener("mouseleave", this.onLeave);
+          }
+          this.el.removeObject3D("mesh");
+          this.texture.dispose();
+          this.material.dispose();
+          this.mesh.geometry.dispose();
+        },
+
+        clearHover: function () {
+          if (!this.hovered) return;
+          this.hovered.clear();
+          this.applyHover();
+        },
+
+        applyHover: function () {
+          const o = this.el.object3D;
+          if (!this.baseScale) this.baseScale = o.scale.clone();
+          const h = this.hovered.size > 0;
+          o.scale.copy(this.baseScale).multiplyScalar(h ? 1.06 : 1);
+          this.draw();
+        },
+
+        draw: function () {
+          if (!this.ctx) return;
+          const d = this.data, ctx = this.ctx, W = this.canvas.width, H = this.canvas.height, ppm = this.ppm;
+          const hovered = d.interactive && this.hovered.size > 0;
+          ctx.clearRect(0, 0, W, H);
+          const pad = d.padding * ppm;
+          const rad = d.radius * ppm;
+          const bw = Math.max(3, ppm * 0.012);
+
+          if (d.bg) {
+            ctx.save();
+            ctx.globalAlpha = d.opacity;
+            roundRect(ctx, bw, bw, W - 2 * bw, H - 2 * bw, rad);
+            ctx.fillStyle = d.bg;
+            ctx.fill();
+            ctx.restore();
+          }
+          const borderColor = hovered ? d.hoverColor : d.border;
+          if (borderColor) {
+            ctx.save();
+            ctx.lineWidth = hovered ? bw * 2.4 : bw;
+            ctx.strokeStyle = borderColor;
+            ctx.shadowColor = borderColor;
+            ctx.shadowBlur = bw * 4;
+            roundRect(ctx, bw * 1.5, bw * 1.5, W - 3 * bw, H - 3 * bw, rad);
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          const family = d.font === "title" ? FONT_TITLE : FONT_BODY;
+          let px = d.size * ppm;
+          let lines;
+          const maxW = W - 2 * pad;
+          for (let i = 0; i < 30; i++) {
+            ctx.font = d.weight + " " + Math.round(px) + "px " + family;
+            lines = wrapLines(ctx, d.text, maxW);
+            const tooWide = lines.some((l) => ctx.measureText(l).width > maxW);
+            if (lines.length * px * d.lineHeight <= H - 2 * pad * 0.6 && !tooWide) break;
+            px *= 0.92;
+          }
+          const lh = px * d.lineHeight;
+          let y = H / 2 - ((lines.length - 1) * lh) / 2;
+          ctx.textBaseline = "middle";
+          ctx.textAlign = d.align;
+          const x = d.align === "left" ? pad : d.align === "right" ? W - pad : W / 2;
+          ctx.fillStyle = hovered && !d.bg ? d.hoverColor : d.color;
+          lines.forEach((l) => {
+            if (d.glow) {
+              ctx.save();
+              ctx.shadowColor = d.glow;
+              ctx.shadowBlur = px * 0.45;
+              ctx.fillText(l, x, y);
+              ctx.restore();
+            }
+            ctx.fillText(l, x, y);
+            y += lh;
+          });
+          this.texture.needsUpdate = true;
+        }
+      });
+
+      /* face-camera: ruota l'entità (solo in orizzontale) verso il giocatore. */
+      AFRAME.registerComponent("face-camera", {
+        init: function () {
+          this.v = new THREE.Vector3(); this.p = new THREE.Vector3();
+          this.q = new THREE.Quaternion(); this.e = new THREE.Euler();
+        },
+        tick: function () {
+          const cam = this.el.sceneEl.camera;
+          if (!cam) return;
+          cam.getWorldPosition(this.v);
+          this.el.object3D.getWorldPosition(this.p);
+          const parent = this.el.object3D.parent;
+          const parentYaw = parent ? this.e.setFromQuaternion(parent.getWorldQuaternion(this.q), "YXZ").y : 0;
+          this.el.object3D.rotation.y = Math.atan2(this.v.x - this.p.x, this.v.z - this.p.z) - parentYaw;
+        }
+      });
+
+      /* glow-sprite: alone luminoso additivo (effetto "bloom" leggero). */
+      AFRAME.registerComponent("glow-sprite", {
+        schema: { color: { default: "#00f3ff" }, size: { default: 1 }, opacity: { default: 0.6 } },
+        init: function () {
+          this.mat = new THREE.SpriteMaterial({
+            map: getGlowTexture(), color: new THREE.Color(this.data.color), transparent: true,
+            opacity: this.data.opacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: false
+          });
+          this.sprite = new THREE.Sprite(this.mat);
+          this.sprite.scale.set(this.data.size, this.data.size, 1);
+          this.el.setObject3D("glow", this.sprite);
+        },
+        update: function () {
+          if (!this.mat) return;
+          this.mat.color.set(this.data.color);
+          this.mat.opacity = this.data.opacity;
+          this.sprite.scale.set(this.data.size, this.data.size, 1);
+        },
+        remove: function () { this.el.removeObject3D("glow"); this.mat.dispose(); }
+      });
+
+      /* slow-scroll: fa scorrere lentamente una texture (stelle negli oblò). */
+      AFRAME.registerComponent("slow-scroll", {
+        schema: { speed: { default: 0.004 } },
+        tick: function (t, dt) {
+          const m = this.el.getObject3D("mesh");
+          if (m && m.material && m.material.map) {
+            m.material.map.offset.x = (m.material.map.offset.x + this.data.speed * dt / 1000) % 1;
+          }
+        }
+      });
+
+      /* -------------------------------------------------------------------
+       * starship-vfx: fuochi d'artificio, scintille e coriandoli.
+       * Un unico sistema di particelle (pochi draw call: leggero su Quest).
+       * ------------------------------------------------------------------- */
+      AFRAME.registerComponent("starship-vfx", {
+        init: function () {
+          const N = this.N = 3200;
+          this.pos = new Float32Array(N * 3);
+          this.vel = new Float32Array(N * 3);
+          this.base = new Float32Array(N * 3);
+          this.col = new Float32Array(N * 3);
+          this.life = new Float32Array(N);
+          this.max = new Float32Array(N);
+          this.grav = new Float32Array(N);
+          this.drag = new Float32Array(N);
+          for (let i = 0; i < N; i++) { this.pos[i * 3 + 1] = -100; }
+          this.next = 0;
+          const geo = new THREE.BufferGeometry();
+          this.posAttr = new THREE.BufferAttribute(this.pos, 3);
+          this.colAttr = new THREE.BufferAttribute(this.col, 3);
+          this.posAttr.setUsage(THREE.DynamicDrawUsage);
+          this.colAttr.setUsage(THREE.DynamicDrawUsage);
+          geo.setAttribute("position", this.posAttr);
+          geo.setAttribute("color", this.colAttr);
+          geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 2.5, 0), 40);
+          this.points = new THREE.Points(geo, new THREE.PointsMaterial({
+            size: 0.14, map: getGlowTexture(), vertexColors: true, transparent: true,
+            blending: THREE.AdditiveBlending, depthWrite: false, fog: false, sizeAttenuation: true
+          }));
+          this.points.frustumCulled = false;
+          this.el.setObject3D("vfx-points", this.points);
+          this.rockets = [];
+          this.alive = 0;
+
+          // Coriandoli (InstancedMesh: un solo draw call)
+          const C = this.C = 260;
+          const cgeo = new THREE.PlaneGeometry(0.07, 0.11);
+          const cmat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, fog: false, toneMapped: false });
+          this.confetti = new THREE.InstancedMesh(cgeo, cmat, C);
+          this.confetti.frustumCulled = false;
+          this.cf = [];
+          const palette = ["#39ff14", "#00f3ff", "#ff00ea", "#ffe600", "#ff3399", "#00ffaa", "#ff6600", "#b829ff", "#ffffff"];
+          const tmpC = new THREE.Color();
+          for (let i = 0; i < C; i++) {
+            this.cf.push({ x: 0, y: -50, z: 0, vy: 0, sway: Math.random() * 6.28, rs: 2 + Math.random() * 5, ax: Math.random(), ay: Math.random(), active: false });
+            tmpC.set(palette[i % palette.length]);
+            this.confetti.setColorAt(i, tmpC);
+          }
+          this.confettiOn = false;
+          this.dummy = new THREE.Object3D();
+          this.el.setObject3D("vfx-confetti", this.confetti);
+          this.updateConfetti(0);
+        },
+
+        spawn: function (x, y, z, vx, vy, vz, r, g, b, life, grav, drag) {
+          const i = this.next;
+          this.next = (this.next + 1) % this.N;
+          const k = i * 3;
+          this.pos[k] = x; this.pos[k + 1] = y; this.pos[k + 2] = z;
+          this.vel[k] = vx; this.vel[k + 1] = vy; this.vel[k + 2] = vz;
+          this.base[k] = r; this.base[k + 1] = g; this.base[k + 2] = b;
+          this.life[i] = life; this.max[i] = life; this.grav[i] = grav; this.drag[i] = drag;
+          this.alive = 1;
+        },
+
+        /** Esplosione sferica (o ad anello) di particelle colorate. */
+        burst: function (x, y, z, colors, count, speed, ring) {
+          const c = new THREE.Color();
+          for (let n = 0; n < count; n++) {
+            c.set(colors[n % colors.length]);
+            let vx, vy, vz;
+            if (ring) {
+              const a = (n / count) * Math.PI * 2;
+              vx = Math.cos(a); vy = Math.sin(a) * 0.35 + 0.1; vz = Math.sin(a);
+            } else {
+              const u = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2, s = Math.sqrt(1 - u * u);
+              vx = s * Math.cos(a); vy = u; vz = s * Math.sin(a);
+            }
+            const sp = speed * (0.75 + Math.random() * 0.35);
+            const twinkle = Math.random() < 0.15 ? 1.6 : 1;
+            this.spawn(x, y, z, vx * sp, vy * sp, vz * sp, c.r * twinkle, c.g * twinkle, c.b * twinkle,
+              1.3 + Math.random() * 0.9, -1.6, 0.985);
+          }
+        },
+
+        /** Razzo che sale dal pavimento e poi esplode. */
+        launch: function (x, z, colors, onBoom) {
+          const apex = 3.9 + Math.random() * 1.1;
+          this.rockets.push({ x: x, y: 0.2, z: z, vy: 5.6 + Math.random() * 0.8, apex: apex, colors: colors, ring: Math.random() < 0.3, onBoom: onBoom });
+        },
+
+        /** Scintille dal bordo della serranda mentre si solleva. */
+        sparks: function (x0, x1, y, z, count) {
+          for (let n = 0; n < count; n++) {
+            const x = x0 + Math.random() * (x1 - x0);
+            this.spawn(x, y, z, (Math.random() - 0.5) * 1.6, -Math.random() * 0.6, 0.6 + Math.random() * 1.6,
+              1.0, 0.55 + Math.random() * 0.35, 0.15, 0.5 + Math.random() * 0.5, -6, 0.97);
+          }
+        },
+
+        /** Fontana di particelle verso l'alto (raggio dei cristalli). */
+        fountain: function (x, y, z, color, count) {
+          const c = new THREE.Color(color);
+          for (let n = 0; n < count; n++) {
+            this.spawn(x, y, z, (Math.random() - 0.5) * 0.8, 2.4 + Math.random() * 2.2, (Math.random() - 0.5) * 0.8,
+              c.r, c.g, c.b, 0.9 + Math.random() * 0.6, -2.2, 0.98);
+          }
+        },
+
+        startConfetti: function () {
+          this.confettiOn = true;
+          this.cf.forEach((p) => {
+            p.active = true;
+            p.x = (Math.random() - 0.5) * 16; p.z = (Math.random() - 0.5) * 16;
+            p.y = 5.4 + Math.random() * 4; p.vy = -(0.55 + Math.random() * 0.6);
+          });
+        },
+        stopConfetti: function () { this.confettiOn = false; },
+
+        clearAll: function () {
+          this.rockets = [];
+          for (let i = 0; i < this.N; i++) { this.life[i] = 0; this.pos[i * 3 + 1] = -100; this.col[i * 3] = this.col[i * 3 + 1] = this.col[i * 3 + 2] = 0; }
+          this.posAttr.needsUpdate = true; this.colAttr.needsUpdate = true;
+          this.confettiOn = false;
+          this.cf.forEach((p) => { p.active = false; p.y = -50; });
+          this.updateConfetti(0);
+        },
+
+        updateConfetti: function (dt) {
+          const d = this.dummy;
+          this.cf.forEach((p, i) => {
+            if (p.active) {
+              p.y += p.vy * dt;
+              p.sway += dt * 1.7;
+              if (p.y < 0.02) {
+                if (this.confettiOn) { p.y = 5.4; p.x = (Math.random() - 0.5) * 16; p.z = (Math.random() - 0.5) * 16; }
+                else { p.active = false; }
+              }
+            }
+            if (p.active) {
+              d.position.set(p.x + Math.sin(p.sway) * 0.25, p.y, p.z + Math.cos(p.sway * 0.8) * 0.2);
+              d.rotation.set(p.sway * p.ax * p.rs, p.sway * p.ay * p.rs, p.sway);
+              d.scale.set(1, 1, 1);
+            } else {
+              d.position.set(0, -50, 0);
+              d.scale.set(0.001, 0.001, 0.001);
+            }
+            d.updateMatrix();
+            this.confetti.setMatrixAt(i, d.matrix);
+          });
+          this.confetti.instanceMatrix.needsUpdate = true;
+        },
+
+        tick: function (t, dtMs) {
+          const dt = Math.min(0.05, (dtMs || 16) / 1000);
+          // razzi
+          for (let r = this.rockets.length - 1; r >= 0; r--) {
+            const k = this.rockets[r];
+            k.y += k.vy * dt;
+            k.vy -= 2.2 * dt;
+            this.spawn(k.x + (Math.random() - 0.5) * 0.04, k.y, k.z + (Math.random() - 0.5) * 0.04,
+              (Math.random() - 0.5) * 0.2, -0.4, (Math.random() - 0.5) * 0.2, 1.0, 0.75, 0.45, 0.45, 0, 0.95);
+            if (k.y >= k.apex || k.vy < 0.8) {
+              this.burst(k.x, k.y, k.z, k.colors, 150, 2.6, k.ring);
+              if (k.onBoom) k.onBoom();
+              this.rockets.splice(r, 1);
+            }
+          }
+          // particelle
+          if (this.alive) {
+            let any = 0;
+            for (let i = 0; i < this.N; i++) {
+              if (this.life[i] <= 0) continue;
+              any = 1;
+              const k = i * 3;
+              this.life[i] -= dt;
+              if (this.life[i] <= 0) {
+                this.col[k] = this.col[k + 1] = this.col[k + 2] = 0;
+                this.pos[k + 1] = -100;
+                continue;
+              }
+              const dr = Math.pow(this.drag[i], dt * 60);
+              this.vel[k] *= dr; this.vel[k + 1] = this.vel[k + 1] * dr + this.grav[i] * dt; this.vel[k + 2] *= dr;
+              this.pos[k] += this.vel[k] * dt; this.pos[k + 1] += this.vel[k + 1] * dt; this.pos[k + 2] += this.vel[k + 2] * dt;
+              const f = this.life[i] / this.max[i];
+              const fade = f * f;
+              this.col[k] = this.base[k] * fade; this.col[k + 1] = this.base[k + 1] * fade; this.col[k + 2] = this.base[k + 2] * fade;
+            }
+            this.posAttr.needsUpdate = true;
+            this.colAttr.needsUpdate = true;
+            this.alive = any || this.rockets.length > 0 ? 1 : 0;
+          }
+          if (this.confettiOn || this.cf.some((p) => p.active)) this.updateConfetti(dt);
+        }
+      });
+    })();
+  </script>
 </head>
 <body>
 
@@ -414,15 +921,15 @@
       <div class="controls-grid">
         <div class="control-box">
           <h3>💻 PC & Smartphone</h3>
-          <p>Usa <strong>WASD</strong> o i tasti <strong>▲ AVANTI / ▼ INDIETRO</strong>. Ruota la visuale e tocca i cristalli neon.</p>
+          <p>Usa <strong>WASD</strong> o i tasti <strong>▲ AVANTI / ▼ INDIETRO</strong>. Ruota la visuale e tocca i cristalli neon. Nelle domande puoi premere <strong>1, 2, 3</strong>.</p>
         </div>
         <div class="control-box">
-          <h3>🥽 Meta Quest 2 (VR)</h3>
-          <p>Premi l'icona <strong>VR</strong> in basso a destra. Punta i raggi laser sui moduli e premi il grilletto.</p>
+          <h3>🥽 Meta Quest (VR)</h3>
+          <p>Premi l'icona <strong>VR</strong> in basso a destra (anche prima di iniziare). Punta i raggi laser sui moduli e premi il grilletto.</p>
         </div>
       </div>
 
-      <button id="btn-start" class="btn-neon-start">Inizia Missione</button>
+      <button id="btn-start" class="btn-neon-start" type="button">Inizia Missione</button>
     </div>
   </div>
 
@@ -436,9 +943,9 @@
       <span>TEMPO: <span id="hud-timer" style="color:#ff66f2;">00:00</span></span>
     </div>
     <div class="hud-pill">
-      <button id="btn-audio-toggle" class="hud-btn">🔊 MUSICA: ON</button>
-      <button id="btn-fullscreen-hud" class="hud-btn" style="border-color:#39ff14; color:#39ff14;">⛶ SCHERMO INTERO</button>
-      <button id="btn-reset-hud" class="hud-btn" style="border-color:#00f3ff; color:#00f3ff;">↻ RIAVVIA</button>
+      <button id="btn-audio-toggle" class="hud-btn" type="button">🔊 AUDIO: ON</button>
+      <button id="btn-fullscreen-hud" class="hud-btn" type="button" style="border-color:#39ff14; color:#39ff14;">⛶ SCHERMO INTERO</button>
+      <button id="btn-reset-hud" class="hud-btn" type="button" style="border-color:#00f3ff; color:#00f3ff;">↻ RIAVVIA</button>
     </div>
   </div>
 
@@ -449,21 +956,22 @@
   </div>
 
   <!-- TOAST BIT-BOT -->
-  <div id="bitbot-toast">
+  <div id="bitbot-toast" role="status" aria-live="polite">
     <span style="font-size:1.3rem;">🤖</span>
     <span id="bitbot-toast-text">Sistema Bit-Bot online!</span>
   </div>
 
   <!-- MODALE DOMANDE DESKTOP & MOBILE -->
-  <div id="desktop-quiz-modal">
+  <div id="desktop-quiz-modal" role="dialog" aria-modal="true" aria-labelledby="dt-question-text">
     <div class="dt-quiz-card">
       <div class="dt-quiz-header">
         <span id="dt-quiz-badge" class="dt-quiz-badge">MODULO 1 / 10</span>
-        <button id="dt-btn-close" class="dt-btn-close">CHIUDI [ESC]</button>
+        <button id="dt-btn-close" class="dt-btn-close" type="button">CHIUDI [ESC]</button>
       </div>
       <div id="dt-question-text" class="dt-question-text">Caricamento domanda...</div>
       <div id="dt-options-grid" class="dt-options-grid"></div>
-      <div id="dt-feedback" class="dt-feedback"></div>
+      <div id="dt-feedback" class="dt-feedback" aria-live="polite"></div>
+      <div class="dt-keys-hint">Tasti rapidi: 1 · 2 · 3 oppure A · B · C</div>
     </div>
   </div>
 
@@ -474,112 +982,89 @@
   <!-- SCENA WEBXR / A-FRAME -->
   <a-scene
     id="main-scene"
-    renderer="antialias: true; colorManagement: true;"
+    renderer="antialias: true; colorManagement: true; foveationLevel: 1"
     background="color: #02040a"
-    fog="type: exponential; color: #04091a; density: 0.025"
-    cursor="rayOrigin: mouse; fuse: false"
-    raycaster="objects: .clickable"
-    vr-mode-ui="enabled: true"
+    fog="type: exponential; color: #04091a; density: 0.018"
+    xr-mode-ui="enabled: true; enterAREnabled: false"
+    device-orientation-permission-ui="enabled: false"
+    loading-screen="dotsColor: #00f3ff; backgroundColor: #03050a"
+    starship-vfx
   >
     <a-assets>
       <canvas id="grid-texture" width="512" height="512"></canvas>
       <canvas id="wall-circuit-texture" width="512" height="512"></canvas>
+      <canvas id="space-texture-left" width="1024" height="512"></canvas>
+      <canvas id="space-texture-right" width="1024" height="512"></canvas>
     </a-assets>
 
     <!-- ILLUMINAZIONE NEON -->
-    <a-entity light="type: ambient; color: #405888; intensity: 1.0"></a-entity>
-    <a-entity light="type: point; color: #00f3ff; intensity: 1.4; distance: 26" position="0 4.5 0"></a-entity>
-    <a-entity light="type: point; color: #ff00ea; intensity: 1.1; distance: 20" position="-6 3 -4"></a-entity>
-    <a-entity light="type: point; color: #39ff14; intensity: 1.1; distance: 20" position="6 3 4"></a-entity>
-
-    <!-- CAMPO STELLARE -->
-    <a-entity id="starfield"></a-entity>
+    <a-entity light="type: ambient; color: #5068a0; intensity: 1.1"></a-entity>
+    <a-entity light="type: hemisphere; color: #7fa8ff; groundColor: #200a30; intensity: 0.6"></a-entity>
+    <a-entity id="light-main" light="type: point; color: #00f3ff; intensity: 2.6; distance: 26; decay: 1" position="0 4.5 0"></a-entity>
+    <a-entity id="light-magenta" light="type: point; color: #ff00ea; intensity: 2.2; distance: 20; decay: 1" position="-6 3 -4"></a-entity>
+    <a-entity id="light-green" light="type: point; color: #39ff14; intensity: 2.2; distance: 20; decay: 1" position="6 3 4"></a-entity>
 
     <!-- STRUTTURA ASTRONAVE -->
     <a-entity id="spaceship-room">
       <!-- Pavimento a griglia luminosa -->
-      <a-plane
-        position="0 0 0"
-        rotation="-90 0 0"
-        width="18"
-        height="18"
-        material="src: #grid-texture; repeat: 12 12; roughness: 0.25; metalness: 0.7"
-      ></a-plane>
+      <a-plane position="0 0 0" rotation="-90 0 0" width="18" height="18"
+        material="src: #grid-texture; repeat: 12 12; roughness: 0.25; metalness: 0.7"></a-plane>
 
       <!-- Soffitto tecnologico -->
-      <a-plane
-        position="0 5.5 0"
-        rotation="90 0 0"
-        width="18"
-        height="18"
-        color="#050a18"
-        material="roughness: 0.5; metalness: 0.8"
-      ></a-plane>
+      <a-plane position="0 5.5 0" rotation="90 0 0" width="18" height="18" color="#050a18"
+        material="roughness: 0.5; metalness: 0.8"></a-plane>
 
-      <!-- Strisce Neon sul soffitto -->
-      <a-box position="-4.5 5.42 0" width="0.18" height="0.08" depth="16" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 2"></a-box>
-      <a-box position="4.5 5.42 0" width="0.18" height="0.08" depth="16" color="#ff00ea" material="emissive: #ff00ea; emissiveIntensity: 2"></a-box>
-      <a-box position="0 5.42 0" width="0.18" height="0.08" depth="16" color="#39ff14" material="emissive: #39ff14; emissiveIntensity: 1.8"></a-box>
+      <!-- Strisce Neon sul soffitto (al finale cambiano colore a onda) -->
+      <a-box class="neon-strip" data-color="#00f3ff" position="-4.5 5.42 0" width="0.18" height="0.08" depth="16" material="shader: flat; color: #00f3ff"></a-box>
+      <a-box class="neon-strip" data-color="#ff00ea" position="4.5 5.42 0" width="0.18" height="0.08" depth="16" material="shader: flat; color: #ff00ea"></a-box>
+      <a-box class="neon-strip" data-color="#39ff14" position="0 5.42 0" width="0.18" height="0.08" depth="16" material="shader: flat; color: #39ff14"></a-box>
+      <!-- Strisce neon a pavimento lungo le pareti -->
+      <a-box class="neon-strip" data-color="#00f3ff" position="-8.7 0.04 0" width="0.08" height="0.06" depth="17.4" material="shader: flat; color: #00f3ff"></a-box>
+      <a-box class="neon-strip" data-color="#ff00ea" position="8.7 0.04 0" width="0.08" height="0.06" depth="17.4" material="shader: flat; color: #ff00ea"></a-box>
+      <a-box class="neon-strip" data-color="#39ff14" position="0 0.04 8.7" width="17.4" height="0.06" depth="0.08" material="shader: flat; color: #39ff14"></a-box>
 
-      <!-- Contenitore LED lampeggianti vittoria -->
+      <!-- Contenitore LED vittoria -->
       <a-entity id="victory-ceiling-leds"></a-entity>
 
-      <!-- MASCOTTE ROBOTICA "BIT-BOT" GRIGIO CHIARO AL CENTRO -->
-      <a-entity
-        id="bitbot-mascot"
-        position="0 2.6 -2.2"
-        animation="property: position; from: 0 2.45 -2.2; to: 0 2.8 -2.2; dir: alternate; dur: 1800; loop: true; easing: easeInOutSine"
-      >
-        <a-sphere radius="0.45" color="#9aa7c0" material="metalness: 0.6; roughness: 0.25; emissive: #3e4c6b; emissiveIntensity: 0.6"></a-sphere>
-        <a-box position="0 0.05 0.36" width="0.54" height="0.22" depth="0.16" color="#040814" material="roughness: 0.1"></a-box>
-        <a-sphere position="-0.14 0.05 0.44" radius="0.06" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 2.5"></a-sphere>
-        <a-sphere position="0.14 0.05 0.44" radius="0.06" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 2.5"></a-sphere>
-        <a-cylinder position="0 0.56 0" radius="0.025" height="0.3" color="#ff00ea" material="emissive: #ff00ea; emissiveIntensity: 1.8"></a-cylinder>
-        <a-sphere position="0 0.74 0" radius="0.075" color="#39ff14" material="emissive: #39ff14; emissiveIntensity: 2.4"></a-sphere>
-        <a-torus
-          radius="0.68"
-          radius-tubular="0.025"
-          rotation="75 0 0"
-          color="#00f3ff"
-          material="emissive: #00f3ff; emissiveIntensity: 1.8"
-          animation="property: rotation; from: 75 0 0; to: 75 360 0; dur: 4500; loop: true; easing: linear"
-        ></a-torus>
-        <a-plane position="0 1.12 0" width="3.4" height="0.48" color="#071129" material="emissive: #071129; opacity: 0.92; transparent: true">
-          <a-text
-            id="bitbot-3d-speech"
-            value="CIAO! SONO BIT-BOT!"
-            align="center"
-            color="#39ff14"
-            width="5.2"
-            position="0 0 0.02"
-          ></a-text>
-        </a-plane>
+      <!-- MASCOTTE ROBOTICA "BIT-BOT" -->
+      <a-entity id="bitbot-mascot" position="-2.6 2.4 -3.2">
+        <a-entity id="bitbot-body"
+          animation__float="property: position; from: 0 -0.15 0; to: 0 0.2 0; dir: alternate; dur: 1800; loop: true; easing: easeInOutSine">
+          <a-sphere radius="0.45" color="#9aa7c0" material="metalness: 0.6; roughness: 0.25; emissive: #3e4c6b; emissiveIntensity: 0.6"></a-sphere>
+          <a-box position="0 0.05 0.36" width="0.54" height="0.22" depth="0.16" color="#040814" material="roughness: 0.1"></a-box>
+          <a-sphere class="bitbot-eye" position="-0.14 0.05 0.44" radius="0.06" material="shader: flat; color: #00f3ff" glow-sprite="color: #00f3ff; size: 0.35; opacity: 0.7"></a-sphere>
+          <a-sphere class="bitbot-eye" position="0.14 0.05 0.44" radius="0.06" material="shader: flat; color: #00f3ff" glow-sprite="color: #00f3ff; size: 0.35; opacity: 0.7"></a-sphere>
+          <a-cylinder position="0 0.56 0" radius="0.025" height="0.3" material="shader: flat; color: #ff00ea"></a-cylinder>
+          <a-sphere position="0 0.74 0" radius="0.075" material="shader: flat; color: #39ff14" glow-sprite="color: #39ff14; size: 0.5; opacity: 0.8"
+            animation__blink="property: scale; from: 1 1 1; to: 1.25 1.25 1.25; dir: alternate; dur: 900; loop: true; easing: easeInOutSine"></a-sphere>
+          <a-torus radius="0.68" radius-tubular="0.025" rotation="75 0 0" material="shader: flat; color: #00f3ff"
+            animation="property: rotation; from: 75 0 0; to: 75 360 0; dur: 4500; loop: true; easing: linear"></a-torus>
+          <a-entity id="bitbot-3d-speech" position="0 1.12 0" face-camera
+            neon-label="text: CIAO! SONO BIT-BOT!; width: 3.4; height: 0.5; size: 0.2; color: #39ff14; glow: #39ff14; font: title; bg: rgba(7,17,41,0.92); border: #00f3ff; radius: 0.12"></a-entity>
+        </a-entity>
       </a-entity>
 
       <!-- Parete Sinistra con Oblò Spaziale -->
       <a-entity position="-9 2.75 0" rotation="0 90 0">
         <a-box position="0 0 -0.2" width="18" height="5.5" depth="0.3" material="src: #wall-circuit-texture; repeat: 4 1; roughness: 0.4; metalness: 0.6"></a-box>
-        <a-torus position="0 0.2 0.02" radius="1.8" radius-tubular="0.12" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 1.5"></a-torus>
-        <a-circle position="0 0.2 0.01" radius="1.72" color="#01030a" material="opacity: 0.25; transparent: true"></a-circle>
+        <a-circle position="0 0.2 0.0" radius="1.72" segments="48" material="shader: flat; src: #space-texture-left" slow-scroll="speed: 0.006"></a-circle>
+        <a-torus position="0 0.2 0.02" radius="1.8" radius-tubular="0.12" segments-tubular="64" material="shader: flat; color: #00f3ff"></a-torus>
+        <a-entity position="0 0.2 0.1" glow-sprite="color: #00f3ff; size: 5; opacity: 0.18"></a-entity>
       </a-entity>
 
       <!-- Parete Destra con Oblò Spaziale -->
       <a-entity position="9 2.75 0" rotation="0 -90 0">
         <a-box position="0 0 -0.2" width="18" height="5.5" depth="0.3" material="src: #wall-circuit-texture; repeat: 4 1; roughness: 0.4; metalness: 0.6"></a-box>
-        <a-torus position="0 0.2 0.02" radius="1.8" radius-tubular="0.12" color="#ff00ea" material="emissive: #ff00ea; emissiveIntensity: 1.5"></a-torus>
-        <a-circle position="0 0.2 0.01" radius="1.72" color="#01030a" material="opacity: 0.25; transparent: true"></a-circle>
+        <a-circle position="0 0.2 0.0" radius="1.72" segments="48" material="shader: flat; src: #space-texture-right" slow-scroll="speed: -0.005"></a-circle>
+        <a-torus position="0 0.2 0.02" radius="1.8" radius-tubular="0.12" segments-tubular="64" material="shader: flat; color: #ff00ea"></a-torus>
+        <a-entity position="0 0.2 0.1" glow-sprite="color: #ff00ea; size: 5; opacity: 0.18"></a-entity>
       </a-entity>
 
       <!-- Parete Posteriore -->
       <a-entity position="0 2.75 9" rotation="0 180 0">
         <a-box position="0 0 0" width="18" height="5.5" depth="0.3" material="src: #wall-circuit-texture; repeat: 4 1; roughness: 0.4; metalness: 0.6"></a-box>
-        <a-text
-          value="STARSHIP PASOLINI // LAB INFORMATICA"
-          position="0 1.6 0.2"
-          align="center"
-          color="#00f3ff"
-          width="11"
-        ></a-text>
+        <a-entity position="0 1.6 0.2"
+          neon-label="text: STARSHIP PASOLINI // LAB INFORMATICA; width: 11; height: 0.8; size: 0.42; color: #00f3ff; glow: #00f3ff; font: title"></a-entity>
       </a-entity>
 
       <!-- PARETE FRONTALE CON SERRANDA E MAXISCHERMO DELL'ASTRONAVE -->
@@ -589,119 +1074,81 @@
         <a-box position="0 4.65 0" width="6.8" height="1.7" depth="0.4" material="src: #wall-circuit-texture; roughness: 0.4"></a-box>
 
         <!-- Cornice Neon -->
-        <a-box position="-3.45 2.75 0.22" width="0.16" height="5.5" depth="0.16" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 2"></a-box>
-        <a-box position="3.45 2.75 0.22" width="0.16" height="5.5" depth="0.16" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 2"></a-box>
-        <a-box position="0 3.82 0.22" width="7.06" height="0.16" depth="0.16" color="#ff00ea" material="emissive: #ff00ea; emissiveIntensity: 2"></a-box>
+        <a-box class="neon-strip" data-color="#00f3ff" position="-3.45 2.75 0.22" width="0.16" height="5.5" depth="0.16" material="shader: flat; color: #00f3ff"></a-box>
+        <a-box class="neon-strip" data-color="#00f3ff" position="3.45 2.75 0.22" width="0.16" height="5.5" depth="0.16" material="shader: flat; color: #00f3ff"></a-box>
+        <a-box class="neon-strip" data-color="#ff00ea" position="0 3.82 0.22" width="7.06" height="0.16" depth="0.16" material="shader: flat; color: #ff00ea"></a-box>
 
         <!-- Display stato superiore -->
-        <a-plane position="0 4.55 0.25" width="6.0" height="0.95" color="#040b1a" material="emissive: #040b1a; emissiveIntensity: 0.5">
-          <a-text
-            id="door-status-text"
-            value="SERRANDA BLOCCATA: 0 / 10"
-            position="0 0.14 0.02"
-            align="center"
-            color="#ff0055"
-            width="8.5"
-          ></a-text>
-          <a-text
-            id="door-sub-text"
-            value="ATTIVA TUTTI I 10 MODULI PER SOLLEVARE LA PARETE"
-            position="0 -0.22 0.02"
-            align="center"
-            color="#00f3ff"
-            width="5.2"
-          ></a-text>
-        </a-plane>
+        <a-plane position="0 4.55 0.25" width="6.0" height="0.95" material="shader: flat; color: #040b1a"></a-plane>
+        <a-entity id="door-status-text" position="0 4.69 0.27"
+          neon-label="text: SERRANDA BLOCCATA: 0 / 10; width: 5.8; height: 0.5; size: 0.3; color: #ff0055; glow: #ff0055; font: title"></a-entity>
+        <a-entity id="door-sub-text" position="0 4.33 0.27"
+          neon-label="text: ATTIVA TUTTI I 10 MODULI PER SOLLEVARE LA PARETE; width: 5.8; height: 0.3; size: 0.17; color: #00f3ff; font: title"></a-entity>
 
         <!-- SERRANDA METALLICA SCORREVOLE -->
         <a-entity id="shutter-gate" position="0 1.9 0.1">
           <a-box width="6.76" height="3.78" depth="0.22" color="#0c1836" material="metalness: 0.85; roughness: 0.25"></a-box>
-          <a-box position="0 -1.3 0.13" width="6.4" height="0.09" depth="0.04" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 1.6"></a-box>
-          <a-box position="0 -0.65 0.13" width="6.4" height="0.09" depth="0.04" color="#ff00ea" material="emissive: #ff00ea; emissiveIntensity: 1.6"></a-box>
-          <a-box position="0 0 0.13" width="6.4" height="0.09" depth="0.04" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 1.6"></a-box>
-          <a-box position="0 0.65 0.13" width="6.4" height="0.09" depth="0.04" color="#ff00ea" material="emissive: #ff00ea; emissiveIntensity: 1.6"></a-box>
-          <a-box position="0 1.3 0.13" width="6.4" height="0.09" depth="0.04" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 1.6"></a-box>
-          <a-text
-            value="ACCESSO RISERVATO // SERRANDA SIGILLATA"
-            position="0 0.02 0.17"
-            align="center"
-            color="#ffe600"
-            width="6.5"
-          ></a-text>
+          <a-box position="0 -1.3 0.13" width="6.4" height="0.09" depth="0.04" material="shader: flat; color: #00f3ff"></a-box>
+          <a-box position="0 -0.65 0.13" width="6.4" height="0.09" depth="0.04" material="shader: flat; color: #ff00ea"></a-box>
+          <a-box position="0 0 0.13" width="6.4" height="0.09" depth="0.04" material="shader: flat; color: #00f3ff"></a-box>
+          <a-box position="0 0.65 0.13" width="6.4" height="0.09" depth="0.04" material="shader: flat; color: #ff00ea"></a-box>
+          <a-box position="0 1.3 0.13" width="6.4" height="0.09" depth="0.04" material="shader: flat; color: #00f3ff"></a-box>
+          <a-entity position="0 0.33 0.17"
+            neon-label="text: ACCESSO RISERVATO // SERRANDA SIGILLATA; width: 6.2; height: 0.42; size: 0.22; color: #ffe600; glow: #ffb300; font: title; bg: rgba(3,6,16,0.85); radius: 0.08"></a-entity>
         </a-entity>
 
         <!-- MAXISCHERMO DELL'ASTRONAVE DIETRO LA SERRANDA -->
         <a-entity id="victory-chamber" position="0 1.9 -0.65">
           <a-box position="0 0 -0.15" width="6.9" height="3.9" depth="0.2" color="#030917" material="metalness: 0.8; roughness: 0.2"></a-box>
-          <a-box position="0 1.85 0" width="6.9" height="0.14" depth="0.25" color="#39ff14" material="emissive: #39ff14; emissiveIntensity: 2.2"></a-box>
-          <a-box position="0 -1.85 0" width="6.9" height="0.14" depth="0.25" color="#39ff14" material="emissive: #39ff14; emissiveIntensity: 2.2"></a-box>
-          <a-box position="-3.38 0 0" width="0.14" height="3.84" depth="0.25" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 2.2"></a-box>
-          <a-box position="3.38 0 0" width="0.14" height="3.84" depth="0.25" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 2.2"></a-box>
+          <a-box position="0 1.85 0" width="6.9" height="0.14" depth="0.25" material="shader: flat; color: #39ff14"></a-box>
+          <a-box position="0 -1.85 0" width="6.9" height="0.14" depth="0.25" material="shader: flat; color: #39ff14"></a-box>
+          <a-box position="-3.38 0 0" width="0.14" height="3.84" depth="0.25" material="shader: flat; color: #00f3ff"></a-box>
+          <a-box position="3.38 0 0" width="0.14" height="3.84" depth="0.25" material="shader: flat; color: #00f3ff"></a-box>
 
-          <a-plane position="0 0 -0.02" width="6.6" height="3.56" color="#051029" material="emissive: #081b42; emissiveIntensity: 0.75"></a-plane>
+          <!-- Schermo animato disegnato su canvas (titolo, stelle, punteggio, messaggio) -->
+          <a-entity id="victory-screen" position="0 0 -0.02"></a-entity>
 
-          <a-text
-            value="MISSIONE COMPLETATA!"
-            position="0 1.32 0.06"
-            align="center"
-            color="#00f3ff"
-            width="7.8"
-          ></a-text>
-
-          <a-text
-            id="victory-big-score"
-            value="PUNTEGGIO FINALE: 10 / 10 (100%)"
-            position="0 0.72 0.06"
-            align="center"
-            color="#ffe600"
-            width="8.5"
-          ></a-text>
-
-          <!-- Scritta fissa centrata senza asterischi -->
-          <a-text
-            id="victory-fixed-text"
-            value="Sei idoneo per essere un nostro grande studente&#10;del Liceo Scientifico Pasolini di Potenza!"
-            position="0 -0.02 0.06"
-            align="center"
-            color="#39ff14"
-            width="6.4"
-            wrap-count="44"
-          ></a-text>
-
-          <a-text
-            id="victory-stats-msg"
-            value="Tempo: 00:00 | Precisione: 100%"
-            position="0 -0.74 0.06"
-            align="center"
-            color="#e0f7ff"
-            width="5.2"
-          ></a-text>
-
-          <!-- Pulsante interattivo sul maxischermo -->
-          <a-box
-            id="btn-screen-new-mission"
-            class="clickable"
-            position="0 -1.34 0.09"
-            width="4.5"
-            height="0.54"
-            depth="0.1"
-            color="#ff00ea"
-            material="emissive: #ff00ea; emissiveIntensity: 1.5"
-          >
-            <a-text
-              value="INIZIA UNA NUOVA MISSIONE"
-              align="center"
-              color="#ffffff"
-              width="5.4"
-              position="0 0 0.07"
-            ></a-text>
-          </a-box>
+          <!-- Pulsante interattivo sul maxischermo (attivo solo dopo la vittoria) -->
+          <a-entity id="btn-screen-new-mission" position="0 -1.34 0.09" data-interactive="false"
+            neon-label="text: INIZIA UNA NUOVA MISSIONE; width: 4.5; height: 0.54; size: 0.24; color: #ffffff; font: title; bg: #b0009f; border: #ff66f2; radius: 0.2; interactive: true"></a-entity>
         </a-entity>
       </a-entity>
     </a-entity>
 
     <!-- CONTENITORE DEI 10 MODULI -->
     <a-entity id="modules-container"></a-entity>
+
+    <!-- Raggi di luce dei cristalli (finale) -->
+    <a-entity id="victory-beams"></a-entity>
+
+    <!-- PANNELLO "INIZIA MISSIONE" NEL MONDO 3D (per chi entra subito in VR) -->
+    <a-entity id="vr-start-panel" position="0 1.45 -1.4" visible="false">
+      <a-entity neon-label="text: STARSHIP PASOLINI; width: 2.2; height: 0.34; size: 0.2; color: #00f3ff; glow: #00f3ff; font: title" position="0 0.42 0"></a-entity>
+      <a-entity neon-label="text: Trova i 10 cristalli neon, rispondi alle domande di informatica e sblocca la serranda!\nPunta con il raggio del controller e premi il grilletto.; width: 2.2; height: 0.5; size: 0.075; color: #cceeff; bg: rgba(5,12,28,0.9); border: #00f3ff; radius: 0.08" position="0 0.06 0"></a-entity>
+      <a-entity id="vr-start-button" position="0 -0.36 0.02" data-interactive="false"
+        neon-label="text: ▶ INIZIA MISSIONE; width: 1.3; height: 0.24; size: 0.1; color: #03050a; font: title; bg: #39ff14; border: #00f3ff; radius: 0.12; interactive: true"></a-entity>
+    </a-entity>
+
+    <!-- PANNELLO DOMANDE 3D PER VR (ancorato nel mondo, davanti al giocatore) -->
+    <a-entity id="quiz-panel-vr" visible="false">
+      <a-entity id="quiz-panel-bg"
+        neon-label="text: ; width: 2.35; height: 1.6; bg: rgba(5,11,28,0.96); border: #00f3ff; radius: 0.1"></a-entity>
+      <a-entity position="0 0 -0.01" glow-sprite="color: #00f3ff; size: 3.6; opacity: 0.18"></a-entity>
+      <a-entity id="quiz-module-title" position="0 0.65 0.01"
+        neon-label="text: MODULO INFORMATICO #1; width: 1.9; height: 0.16; size: 0.07; color: #ff66f2; glow: #ff00ea; font: title"></a-entity>
+      <a-entity id="quiz-question-text" position="0 0.37 0.01"
+        neon-label="text: Caricamento domanda...; width: 2.1; height: 0.38; size: 0.085; color: #ffffff"></a-entity>
+      <a-entity id="opt-bg-0" class="vr-option" position="0 0.06 0.02" data-interactive="false"
+        neon-label="text: A) Opzione 1; width: 2.05; height: 0.2; size: 0.075; color: #00f3ff; bg: #0c1d3d; border: #00f3ff; radius: 0.05; align: left; interactive: true"></a-entity>
+      <a-entity id="opt-bg-1" class="vr-option" position="0 -0.18 0.02" data-interactive="false"
+        neon-label="text: B) Opzione 2; width: 2.05; height: 0.2; size: 0.075; color: #00f3ff; bg: #0c1d3d; border: #00f3ff; radius: 0.05; align: left; interactive: true"></a-entity>
+      <a-entity id="opt-bg-2" class="vr-option" position="0 -0.42 0.02" data-interactive="false"
+        neon-label="text: C) Opzione 3; width: 2.05; height: 0.2; size: 0.075; color: #00f3ff; bg: #0c1d3d; border: #00f3ff; radius: 0.05; align: left; interactive: true"></a-entity>
+      <a-entity id="quiz-feedback-text" position="0 -0.64 0.01"
+        neon-label="text: ; width: 2.15; height: 0.22; size: 0.06; color: #39ff14"></a-entity>
+      <a-entity id="btn-close-bg" position="1.0 0.65 0.03" data-interactive="false"
+        neon-label="text: ✕; width: 0.24; height: 0.18; size: 0.11; color: #ffffff; bg: #ff0055; border: #ff99bb; radius: 0.05; interactive: true"></a-entity>
+    </a-entity>
 
     <!-- RIG GIOCATORE CON BARRIERA PERIMETRALE -->
     <a-entity id="player-rig" position="0 0 5.5" room-boundary-guard>
@@ -710,76 +1157,31 @@
         position="0 1.6 0"
         look-controls="pointerLockEnabled: false"
         wasd-controls="acceleration: 28"
-      >
-        <!-- PANNELLO DOMANDE OLOGRAFICO 3D (PER VR META QUEST 2) -->
-        <a-entity id="quiz-panel-vr" position="0 -0.05 -1.85" visible="false" scale="0.001 0.001 0.001">
-          <a-plane width="2.35" height="1.52" color="#050b1c" material="opacity: 0.96; transparent: true; shader: flat"></a-plane>
-          <a-box position="0 0.76 0.01" width="2.38" height="0.03" depth="0.02" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 2"></a-box>
-          <a-box position="0 -0.76 0.01" width="2.38" height="0.03" depth="0.02" color="#ff00ea" material="emissive: #ff00ea; emissiveIntensity: 2"></a-box>
-          <a-box position="-1.18 0 0.01" width="0.03" height="1.54" depth="0.02" color="#00f3ff" material="emissive: #00f3ff; emissiveIntensity: 2"></a-box>
-          <a-box position="1.18 0 0.01" width="0.03" height="1.54" depth="0.02" color="#ff00ea" material="emissive: #ff00ea; emissiveIntensity: 2"></a-box>
+        cursor="rayOrigin: mouse; fuse: false"
+        raycaster="objects: .clickable; far: 40"
+      ></a-camera>
 
-          <a-text
-            id="quiz-module-title"
-            value="MODULO INFORMATICO #1"
-            position="0 0.62 0.02"
-            align="center"
-            color="#ff00ea"
-            width="2.6"
-          ></a-text>
+      <!-- COMANDI IN VR: audio e riavvio (all'altezza della vita, seguono il giocatore) -->
+      <a-entity id="vr-control-bar" position="0 0.8 -0.6" rotation="-50 0 0" visible="false">
+        <a-entity id="vr-audio-btn" position="-0.2 0 0" data-interactive="false"
+          neon-label="text: 🔊 AUDIO; width: 0.36; height: 0.13; size: 0.05; color: #ff99f6; bg: rgba(5,12,28,0.92); border: #ff00ea; radius: 0.04; font: title; interactive: true"></a-entity>
+        <a-entity id="vr-reset-btn" position="0.2 0 0" data-interactive="false"
+          neon-label="text: ↻ RIAVVIA; width: 0.36; height: 0.13; size: 0.05; color: #00f3ff; bg: rgba(5,12,28,0.92); border: #00f3ff; radius: 0.04; font: title; interactive: true"></a-entity>
+      </a-entity>
 
-          <a-text
-            id="quiz-question-text"
-            value="Caricamento domanda..."
-            position="0 0.36 0.02"
-            align="center"
-            color="#ffffff"
-            width="2.1"
-            wrap-count="42"
-          ></a-text>
-
-          <a-entity id="opt-btn-0" position="0 0.04 0.02">
-            <a-plane id="opt-bg-0" width="2.05" height="0.19" color="#0c1d3d" material="shader: flat"></a-plane>
-            <a-text id="opt-txt-0" value="A) Opzione 1" align="center" color="#00f3ff" width="2.1" position="0 0 0.01"></a-text>
-          </a-entity>
-
-          <a-entity id="opt-btn-1" position="0 -0.19 0.02">
-            <a-plane id="opt-bg-1" width="2.05" height="0.19" color="#0c1d3d" material="shader: flat"></a-plane>
-            <a-text id="opt-txt-1" value="B) Opzione 2" align="center" color="#00f3ff" width="2.1" position="0 0 0.01"></a-text>
-          </a-entity>
-
-          <a-entity id="opt-btn-2" position="0 -0.42 0.02">
-            <a-plane id="opt-bg-2" width="2.05" height="0.19" color="#0c1d3d" material="shader: flat"></a-plane>
-            <a-text id="opt-txt-2" value="C) Opzione 3" align="center" color="#00f3ff" width="2.1" position="0 0 0.01"></a-text>
-          </a-entity>
-
-          <a-text
-            id="quiz-feedback-text"
-            value=""
-            position="0 -0.62 0.02"
-            align="center"
-            color="#39ff14"
-            width="2.0"
-            wrap-count="46"
-          ></a-text>
-
-          <a-entity id="btn-close-quiz" position="0.98 0.62 0.03">
-            <a-plane id="btn-close-bg" width="0.26" height="0.16" color="#ff0055" material="shader: flat"></a-plane>
-            <a-text value="X" align="center" color="#ffffff" width="2.4" position="0 0 0.01"></a-text>
-          </a-entity>
-        </a-entity>
-      </a-camera>
-
-      <!-- Controller VR Meta Quest 2 -->
-      <a-entity id="left-hand" laser-controls="hand: left" raycaster="objects: .clickable; far: 25" line="color: #00f3ff; opacity: 0.85"></a-entity>
-      <a-entity id="right-hand" laser-controls="hand: right" raycaster="objects: .clickable; far: 25" line="color: #ff00ea; opacity: 0.85"></a-entity>
+      <!-- Controller VR Meta Quest -->
+      <a-entity id="left-hand" laser-controls="hand: left" raycaster="objects: .clickable; far: 40; lineColor: #00f3ff; lineOpacity: 0.85"></a-entity>
+      <a-entity id="right-hand" laser-controls="hand: right" raycaster="objects: .clickable; far: 40; lineColor: #ff00ea; lineOpacity: 0.85"></a-entity>
     </a-entity>
   </a-scene>
 
   <script>
+    "use strict";
     /**
      * =========================================================================
      * 1. POOL DI 30 DOMANDE DI INFORMATICA (TERZA MEDIA)
+     *    Nel pool la risposta giusta è scritta per prima (correct: 0):
+     *    a ogni partita l'ordine delle risposte viene MESCOLATO.
      * =========================================================================
      */
     const QUESTION_POOL = [
@@ -994,7 +1396,6 @@
         hint: "Suggerimento: 'Open Source' significa letteralmente 'sorgente aperta'."
       }
     ];
-
     // Colori FLUO per i cilindri sotto le gemme dopo la risposta esatta
     const FLUO_CYLINDER_PALETTE = [
       { hex: "#39ff14", name: "Verde Fluo" },
@@ -1013,14 +1414,14 @@
     const MODULE_POSITIONS = [
       { pos: "-6.8 1.3 -6.5", label: "NODO 01" },
       { pos: "-7.2 1.3 -1.8", label: "NODO 02" },
-      { pos: "-7.2 1.3  2.8", label: "NODO 03" },
-      { pos: "-5.5 1.3  6.8", label: "NODO 04" },
-      { pos: "-1.8 1.3  7.2", label: "NODO 05" },
-      { pos: " 2.2 1.3  7.2", label: "NODO 06" },
-      { pos: " 6.2 1.3  6.5", label: "NODO 07" },
-      { pos: " 7.2 1.3  2.2", label: "NODO 08" },
-      { pos: " 7.2 1.3 -2.5", label: "NODO 09" },
-      { pos: " 6.5 1.3 -6.5", label: "NODO 10" }
+      { pos: "-7.2 1.3 2.8", label: "NODO 03" },
+      { pos: "-5.5 1.3 6.8", label: "NODO 04" },
+      { pos: "-1.8 1.3 7.2", label: "NODO 05" },
+      { pos: "2.2 1.3 7.2", label: "NODO 06" },
+      { pos: "6.2 1.3 6.5", label: "NODO 07" },
+      { pos: "7.2 1.3 2.2", label: "NODO 08" },
+      { pos: "7.2 1.3 -2.5", label: "NODO 09" },
+      { pos: "6.5 1.3 -6.5", label: "NODO 10" }
     ];
 
     const BITBOT_PRAISES = [
@@ -1037,30 +1438,30 @@
       "Nessun problema, anche i grandi hacker fanno debug! 🛠️"
     ];
 
+    const VR_START_POSITION = { x: 0, y: 0, z: 1.0 };
+    const DESKTOP_START_POSITION = { x: 0, y: 0, z: 5.5 };
+
     let activeQuestions = [];
 
+    function shuffleInPlace(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    /** Sceglie le domande e MESCOLA anche le risposte, tenendo traccia di quella giusta. */
     function pickRandomQuestions(pool, count) {
-      const copy = pool.map(item => {
-        // Mescola le 3 opzioni mantenendo traccia di quale sia la risposta corretta
-        const indexedOptions = item.options.map((text, idx) => ({
-          text,
-          isCorrect: idx === item.correct
-        }));
-        for (let i = indexedOptions.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
-        }
+      const copy = pool.map((item) => {
+        const order = shuffleInPlace(item.options.map((_, i) => i));
         return {
           ...item,
-          options: indexedOptions.map(o => o.text),
-          correct: indexedOptions.findIndex(o => o.isCorrect)
+          options: order.map((i) => item.options[i]),
+          correct: order.indexOf(item.correct)
         };
       });
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy.slice(0, count);
+      return shuffleInPlace(copy).slice(0, count);
     }
 
     /**
@@ -1071,12 +1472,14 @@
     class NeonSynthAudio {
       constructor() {
         this.ctx = null;
+        this.master = null;
         this.isPlaying = false;
         this.isMuted = false;
         this.isUnlocked = false;
         this.isVictoryMusic = false;
         this.loopTimer = null;
         this.step = 0;
+        this.noiseBuffer = null;
         this.bassNotes = [
           110.00, 110.00, 220.00, 110.00, 130.81, 130.81, 261.63, 130.81,
           87.31,  87.31,  174.61, 87.31,  98.00,  98.00,  196.00, 98.00
@@ -1088,6 +1491,17 @@
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
           if (AudioCtx) {
             this.ctx = new AudioCtx();
+            const comp = this.ctx.createDynamicsCompressor();
+            comp.threshold.value = -12;
+            comp.ratio.value = 4;
+            comp.connect(this.ctx.destination);
+            this.master = this.ctx.createGain();
+            this.master.gain.value = this.isMuted ? 0 : 0.85;
+            this.master.connect(comp);
+            const len = this.ctx.sampleRate;
+            this.noiseBuffer = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+            const data = this.noiseBuffer.getChannelData(0);
+            for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
           }
         }
         if (!this.ctx) return;
@@ -1107,6 +1521,42 @@
             this.isUnlocked = true;
           } catch (e) {}
         }
+      }
+
+      ready() { return !!(this.ctx && !this.isMuted); }
+
+      tone(freq, type, start, dur, gain, freqEnd) {
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, start);
+        if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, start + dur);
+        g.gain.setValueAtTime(0.0001, start);
+        g.gain.exponentialRampToValueAtTime(gain, start + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+        osc.connect(g);
+        g.connect(this.master);
+        osc.start(start);
+        osc.stop(start + dur + 0.02);
+      }
+
+      noise(start, dur, gain, type, f0, f1) {
+        const src = this.ctx.createBufferSource();
+        src.buffer = this.noiseBuffer;
+        src.loop = true;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = type;
+        filter.frequency.setValueAtTime(f0, start);
+        if (f1) filter.frequency.exponentialRampToValueAtTime(f1, start + dur);
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.0001, start);
+        g.gain.exponentialRampToValueAtTime(gain, start + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+        src.connect(filter);
+        filter.connect(g);
+        g.connect(this.master);
+        src.start(start);
+        src.stop(start + dur + 0.05);
       }
 
       startMusic() {
@@ -1132,16 +1582,21 @@
           } else {
             const freq = this.bassNotes[this.step % this.bassNotes.length];
             this.playBassStep(freq);
+            if (this.step % 4 === 2) this.playHat();
           }
           this.step++;
         }, 235);
       }
 
+      stopMusic() {
+        if (this.loopTimer) clearInterval(this.loopTimer);
+        this.loopTimer = null;
+        this.isPlaying = false;
+      }
+
       switchToVictoryMusic() {
         this.init();
-        if (!this.isPlaying) {
-          this.startMusic();
-        }
+        if (!this.isPlaying) this.startMusic();
         this.isVictoryMusic = true;
         this.step = 0;
         this.playVictory();
@@ -1152,126 +1607,122 @@
         this.step = 0;
       }
 
+      playHat() {
+        if (!this.ready()) return;
+        this.noise(this.ctx.currentTime, 0.05, 0.03, "highpass", 7000);
+      }
+
       playVictoryLoopStep(stepIdx) {
-        if (!this.ctx || this.isMuted) return;
-        const victoryArp = [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25, 587.33, 783.99];
-        const freq = victoryArp[stepIdx % victoryArp.length];
+        if (!this.ready()) return;
+        const chords = [
+          [523.25, 659.25, 783.99, 1046.50],
+          [440.00, 523.25, 659.25, 880.00],
+          [349.23, 440.00, 523.25, 698.46],
+          [392.00, 493.88, 587.33, 783.99]
+        ];
+        const chord = chords[Math.floor(stepIdx / 8) % chords.length];
         const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(freq, now);
-
-        gain.gain.setValueAtTime(0.001, now);
-        gain.gain.exponentialRampToValueAtTime(0.11, now + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.21);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.22);
+        this.tone(chord[stepIdx % 4], "triangle", now, 0.21, 0.09);
+        if (stepIdx % 8 === 0) {
+          chord.forEach((f) => this.tone(f / 2, "sine", now, 1.8, 0.035));
+          this.tone(chord[0] / 4, "sawtooth", now, 0.4, 0.06);
+        }
+        if (stepIdx % 2 === 1) this.playHat();
       }
 
       playBassStep(freq) {
-        if (!this.ctx || this.isMuted) return;
+        if (!this.ready()) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const filter = this.ctx.createBiquadFilter();
         const gain = this.ctx.createGain();
-
         osc.type = "sawtooth";
         osc.frequency.setValueAtTime(freq, now);
-
         filter.type = "lowpass";
         filter.frequency.setValueAtTime(750, now);
         filter.frequency.exponentialRampToValueAtTime(220, now + 0.19);
-
         gain.gain.setValueAtTime(0.001, now);
-        gain.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.1, now + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.21);
-
         osc.connect(filter);
         filter.connect(gain);
-        gain.connect(this.ctx.destination);
-
+        gain.connect(this.master);
         osc.start(now);
         osc.stop(now + 0.22);
       }
 
+      playHover() {
+        if (!this.ready()) return;
+        this.tone(1400, "sine", this.ctx.currentTime, 0.05, 0.04);
+      }
+
       playSelect() {
         this.init();
-        if (!this.ctx || this.isMuted) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(1100, now + 0.12);
-        gain.gain.setValueAtTime(0.13, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.15);
+        if (!this.ready()) return;
+        this.tone(600, "sine", this.ctx.currentTime, 0.14, 0.13, 1100);
       }
 
       playSuccess() {
         this.init();
-        if (!this.ctx || this.isMuted) return;
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach((n, idx) => {
-          const now = this.ctx.currentTime + idx * 0.07;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = "triangle";
-          osc.frequency.setValueAtTime(n, now);
-          gain.gain.setValueAtTime(0.16, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now);
-          osc.stop(now + 0.26);
+        if (!this.ready()) return;
+        [523.25, 659.25, 783.99, 1046.50].forEach((n, idx) => {
+          const t = this.ctx.currentTime + idx * 0.07;
+          this.tone(n, "triangle", t, 0.25, 0.16);
+          this.tone(n * 2, "sine", t, 0.18, 0.04);
         });
       }
 
       playError() {
         this.init();
-        if (!this.ctx || this.isMuted) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(170, now);
-        osc.frequency.linearRampToValueAtTime(110, now + 0.28);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.31);
+        if (!this.ready()) return;
+        this.tone(170, "sawtooth", this.ctx.currentTime, 0.3, 0.12, 110);
       }
 
       playVictory() {
         this.init();
-        if (!this.ctx || this.isMuted) return;
-        const fanfare = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50, 1318.51];
-        fanfare.forEach((n, idx) => {
-          const now = this.ctx.currentTime + idx * 0.12;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = "triangle";
-          osc.frequency.setValueAtTime(n, now);
-          gain.gain.setValueAtTime(0.22, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now);
-          osc.stop(now + 0.46);
+        if (!this.ready()) return;
+        [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50, 1318.51].forEach((n, idx) => {
+          const t = this.ctx.currentTime + idx * 0.12;
+          this.tone(n, "triangle", t, 0.45, 0.2);
         });
+        const t = this.ctx.currentTime + 0.9;
+        [261.63, 329.63, 392.0, 523.25].forEach((f) => this.tone(f, "sawtooth", t, 1.6, 0.04));
+      }
+
+      playBeam(i) {
+        if (!this.ready()) return;
+        this.tone(330 * Math.pow(1.122, i), "sine", this.ctx.currentTime, 0.5, 0.08, 660 * Math.pow(1.122, i));
+      }
+
+      playShutter() {
+        if (!this.ready()) return;
+        const t = this.ctx.currentTime;
+        this.tone(55, "sawtooth", t, 2.6, 0.08, 80);
+        this.noise(t, 2.5, 0.12, "bandpass", 300, 900);
+        this.noise(t + 2.3, 0.6, 0.2, "lowpass", 400, 120);
+        this.tone(70, "sine", t + 2.4, 0.4, 0.3, 40);
+      }
+
+      playBoom() {
+        if (!this.ready()) return;
+        const t = this.ctx.currentTime;
+        this.noise(t, 0.9, 0.22, "lowpass", 900, 90);
+        this.tone(90, "sine", t, 0.4, 0.18, 40);
+        for (let i = 0; i < 6; i++) {
+          this.noise(t + 0.25 + Math.random() * 0.6, 0.04, 0.05, "highpass", 5000);
+        }
+      }
+
+      playWhistle() {
+        if (!this.ready()) return;
+        this.tone(900, "sine", this.ctx.currentTime, 0.6, 0.03, 1800);
       }
 
       toggleMute() {
         this.isMuted = !this.isMuted;
+        if (this.master) {
+          this.master.gain.setTargetAtTime(this.isMuted ? 0 : 0.85, this.ctx.currentTime, 0.05);
+        }
         return !this.isMuted;
       }
     }
@@ -1280,7 +1731,7 @@
 
     /**
      * =========================================================================
-     * 3. TEXTURE PROCEDURALI NEON
+     * 3. TEXTURE PROCEDURALI NEON (pavimento, pareti, spazio negli oblò)
      * =========================================================================
      */
     function generateNeonTextures() {
@@ -1288,7 +1739,6 @@
       const gCtx = gridCanvas.getContext("2d");
       gCtx.fillStyle = "#040814";
       gCtx.fillRect(0, 0, 512, 512);
-
       gCtx.strokeStyle = "rgba(0, 243, 255, 0.22)";
       gCtx.lineWidth = 2;
       for (let i = 0; i <= 512; i += 64) {
@@ -1297,30 +1747,76 @@
       }
       gCtx.strokeStyle = "#00f3ff";
       gCtx.lineWidth = 6;
+      gCtx.shadowColor = "#00f3ff";
+      gCtx.shadowBlur = 12;
       gCtx.strokeRect(0, 0, 512, 512);
 
       const wallCanvas = document.getElementById("wall-circuit-texture");
       const wCtx = wallCanvas.getContext("2d");
       wCtx.fillStyle = "#060b1c";
       wCtx.fillRect(0, 0, 512, 512);
-
       wCtx.strokeStyle = "#162852";
       wCtx.lineWidth = 4;
       wCtx.strokeRect(8, 8, 496, 496);
-
+      wCtx.shadowColor = "#ff00ea";
+      wCtx.shadowBlur = 8;
       wCtx.strokeStyle = "#ff00ea";
       wCtx.lineWidth = 3;
       wCtx.beginPath();
       wCtx.moveTo(0, 120); wCtx.lineTo(180, 120); wCtx.lineTo(220, 160); wCtx.lineTo(512, 160);
       wCtx.moveTo(0, 380); wCtx.lineTo(300, 380); wCtx.lineTo(340, 340); wCtx.lineTo(512, 340);
       wCtx.stroke();
-
+      wCtx.strokeStyle = "rgba(0,243,255,0.5)";
+      wCtx.shadowColor = "#00f3ff";
+      wCtx.lineWidth = 2;
+      wCtx.beginPath();
+      wCtx.moveTo(80, 0); wCtx.lineTo(80, 90); wCtx.lineTo(120, 120);
+      wCtx.moveTo(420, 512); wCtx.lineTo(420, 420); wCtx.lineTo(380, 380);
+      wCtx.stroke();
       wCtx.fillStyle = "#00f3ff";
-      [[180, 120], [220, 160], [300, 380], [340, 340]].forEach(([x, y]) => {
+      [[180, 120], [220, 160], [300, 380], [340, 340], [120, 120], [380, 380]].forEach(([x, y]) => {
         wCtx.beginPath();
         wCtx.arc(x, y, 6, 0, Math.PI * 2);
         wCtx.fill();
       });
+
+      drawSpace(document.getElementById("space-texture-left"), "#00f3ff", "#2a6f97", "#7b2cbf", false);
+      drawSpace(document.getElementById("space-texture-right"), "#ff00ea", "#b5179e", "#ffb703", true);
+    }
+
+    /** Spazio visto dagli oblò: stelle, nebulosa e pianeta. */
+    function drawSpace(canvas, glow, planetA, planetB, rings) {
+      const c = canvas.getContext("2d");
+      const W = canvas.width, H = canvas.height;
+      c.fillStyle = "#01020a";
+      c.fillRect(0, 0, W, H);
+      const neb = c.createRadialGradient(W * 0.3, H * 0.45, 10, W * 0.3, H * 0.45, W * 0.45);
+      neb.addColorStop(0, glow + "55");
+      neb.addColorStop(1, "rgba(0,0,0,0)");
+      c.fillStyle = neb;
+      c.fillRect(0, 0, W, H);
+      for (let i = 0; i < 420; i++) {
+        const b = 140 + Math.random() * 115;
+        c.fillStyle = `rgba(${b},${b},255,${0.5 + Math.random() * 0.5})`;
+        const s = Math.random() < 0.07 ? 2.6 : 1.3;
+        c.fillRect(Math.random() * W, Math.random() * H, s, s);
+      }
+      const cx = W * 0.7, cy = H * 0.55, r = H * 0.26;
+      const g = c.createRadialGradient(cx - r * 0.4, cy - r * 0.4, r * 0.1, cx, cy, r);
+      g.addColorStop(0, planetB);
+      g.addColorStop(0.6, planetA);
+      g.addColorStop(1, "#05020f");
+      c.save();
+      c.shadowColor = glow;
+      c.shadowBlur = 40;
+      c.fillStyle = g;
+      c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.fill();
+      c.restore();
+      if (rings) {
+        c.strokeStyle = "rgba(255,230,120,0.6)";
+        c.lineWidth = 5;
+        c.beginPath(); c.ellipse(cx, cy, r * 1.7, r * 0.38, -0.3, 0, Math.PI * 2); c.stroke();
+      }
     }
 
     /**
@@ -1334,20 +1830,22 @@
     };
 
     AFRAME.registerComponent("room-boundary-guard", {
+      init: function () {
+        this.worldQuat = new THREE.Quaternion();
+        this.forwardVec = new THREE.Vector3();
+      },
       tick: function (time, delta) {
         const rig = this.el;
         const cam = document.getElementById("player-camera");
         if (!rig || !cam) return;
 
-        if ((virtualMoveState.forward || virtualMoveState.backward) && gameState.activeModuleIndex === null) {
+        if ((virtualMoveState.forward || virtualMoveState.backward) && gameState.activeModuleIndex === null && !gameState.introTurn) {
           const dt = Math.min((delta || 16) / 1000, 0.1);
           const speed = 3.8 * dt;
           const dirSign = (virtualMoveState.forward ? 1 : 0) - (virtualMoveState.backward ? 1 : 0);
-
           if (dirSign !== 0) {
-            const worldQuat = new THREE.Quaternion();
-            cam.object3D.getWorldQuaternion(worldQuat);
-            const forwardVec = new THREE.Vector3(0, 0, -1).applyQuaternion(worldQuat);
+            cam.object3D.getWorldQuaternion(this.worldQuat);
+            const forwardVec = this.forwardVec.set(0, 0, -1).applyQuaternion(this.worldQuat);
             forwardVec.y = 0;
             if (forwardVec.lengthSq() > 0.0001) {
               forwardVec.normalize();
@@ -1359,24 +1857,15 @@
 
         const rigPos = rig.object3D.position;
         const camPos = cam.object3D.position;
-
         const worldX = rigPos.x + camPos.x;
         const worldZ = rigPos.z + camPos.z;
-
         const minBound = -8.1;
         const maxBound = 8.1;
 
-        if (worldX < minBound) {
-          rigPos.x += (minBound - worldX);
-        } else if (worldX > maxBound) {
-          rigPos.x -= (worldX - maxBound);
-        }
-
-        if (worldZ < minBound) {
-          rigPos.z += (minBound - worldZ);
-        } else if (worldZ > maxBound) {
-          rigPos.z -= (worldZ - maxBound);
-        }
+        if (worldX < minBound) rigPos.x += (minBound - worldX);
+        else if (worldX > maxBound) rigPos.x -= (worldX - maxBound);
+        if (worldZ < minBound) rigPos.z += (minBound - worldZ);
+        else if (worldZ > maxBound) rigPos.z -= (worldZ - maxBound);
       }
     });
 
@@ -1392,9 +1881,15 @@
       combo: 1,
       startTime: null,
       timerInterval: null,
+      started: false,
       completed: false,
       isClosingSuccess: false,
-      autoCloseTimeout: null
+      autoCloseTimeout: null,
+      victoryTimers: [],
+      victoryStart: 0,
+      introTurn: null,
+      accuracy: 100,
+      elapsedStr: "00:00"
     };
 
     function formatTime(ms) {
@@ -1409,7 +1904,6 @@
       gameState.startTime = Date.now();
       const timerEl = document.getElementById("hud-timer");
       if (timerEl) timerEl.textContent = "00:00";
-
       gameState.timerInterval = setInterval(() => {
         if (!gameState.completed && gameState.startTime) {
           const el = document.getElementById("hud-timer");
@@ -1425,18 +1919,21 @@
       }
     }
 
+    function setLabel(id, props) {
+      const el = typeof id === "string" ? document.getElementById(id) : id;
+      if (el) el.setAttribute("neon-label", props);
+    }
+
     function showBitBotMessage(text) {
       const toast = document.getElementById("bitbot-toast");
       const toastText = document.getElementById("bitbot-toast-text");
-      const speech3D = document.getElementById("bitbot-3d-speech");
-
-      if (speech3D) {
-        speech3D.setAttribute("value", text.toUpperCase());
-      }
-
+      setLabel("bitbot-3d-speech", { text: text.toUpperCase() });
       if (toast && toastText) {
         toastText.textContent = text;
         toast.style.display = "flex";
+        toast.classList.remove("show");
+        void toast.offsetWidth;
+        toast.classList.add("show");
         clearTimeout(toast._hideTimer);
         toast._hideTimer = setTimeout(() => {
           toast.style.display = "none";
@@ -1456,37 +1953,48 @@
       }
     }
 
-    function setVRPanelInteractable(active) {
-      const ids = ["opt-bg-0", "opt-bg-1", "opt-bg-2", "btn-close-bg"];
-      ids.forEach((id) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (active) el.classList.add("clickable");
-        else el.classList.remove("clickable");
-      });
+    function setMovementEnabled(enabled) {
+      const cam = document.getElementById("player-camera");
+      if (cam) cam.setAttribute("wasd-controls", "enabled", enabled);
     }
 
-    function createStarfield() {
-      const container = document.getElementById("starfield");
-      if (!container) return;
-      container.innerHTML = "";
-      const colors = ["#ffffff", "#00f3ff", "#ff00ea", "#39ff14"];
-      for (let i = 0; i < 80; i++) {
-        const star = document.createElement("a-sphere");
-        const angle = Math.random() * Math.PI * 2;
-        const radius = 15 + Math.random() * 14;
-        const x = Math.cos(angle) * radius;
-        const z = Math.sin(angle) * radius;
-        const y = 0.5 + Math.random() * 6.5;
-        const size = 0.04 + Math.random() * 0.07;
-        const col = colors[i % colors.length];
+    /** Rende un elemento (e i suoi pulsanti) visibile e puntabile, oppure no. */
+    function setInteractive(el, on) {
+      if (!el) return;
+      const isButton = (e) => {
+        const a = e.getAttribute("neon-label");
+        return a && (typeof a === "string" ? /interactive:\s*true/.test(a) : a.interactive);
+      };
+      const list = [el, ...el.querySelectorAll("[neon-label]")].filter(isButton);
+      list.forEach((b) => {
+        b.dataset.interactive = String(on);
+        b.classList.toggle("clickable", on);
+        const c = b.components["neon-label"];
+        if (!on && c) c.clearHover();
+      });
+      refreshRaycasters();
+    }
 
-        star.setAttribute("position", `${x.toFixed(2)} ${y.toFixed(2)} ${z.toFixed(2)}`);
-        star.setAttribute("radius", size.toFixed(3));
-        star.setAttribute("color", col);
-        star.setAttribute("material", `emissive: ${col}; emissiveIntensity: 2.2; shader: flat`);
-        container.appendChild(star);
-      }
+    function setVisibleInteractive(el, on) {
+      if (!el) return;
+      el.setAttribute("visible", on);
+      setInteractive(el, on);
+    }
+
+    let refreshPending = false;
+    function refreshRaycasters() {
+      if (refreshPending) return;
+      refreshPending = true;
+      setTimeout(() => {
+        refreshPending = false;
+        document.querySelectorAll("[raycaster]").forEach((r) => {
+          if (r.components.raycaster) r.components.raycaster.refreshObjects();
+        });
+      }, 0);
+    }
+
+    function setVRPanelInteractable(active) {
+      setVisibleInteractive(document.getElementById("quiz-panel-vr"), active);
     }
 
     function createVictoryCeilingLEDs() {
@@ -1494,19 +2002,17 @@
       if (!container) return;
       container.innerHTML = "";
       const ledColors = ["#39ff14", "#00f3ff", "#ff00ea", "#ffe600"];
-
       for (let row = -6; row <= 6; row += 4) {
         for (let col = -6; col <= 6; col += 4) {
           const color = ledColors[Math.abs(row + col) % ledColors.length];
           const led = document.createElement("a-sphere");
-          led.setAttribute("position", `${col} 5.34 ${row}`);
+          led.setAttribute("position", `${col} 5.3 ${row}`);
           led.setAttribute("radius", "0.17");
-          led.setAttribute("color", color);
-          led.setAttribute("material", `emissive: ${color}; emissiveIntensity: 3.0; shader: flat`);
-          led.setAttribute(
-            "animation",
-            `property: scale; from: 0.7 0.7 0.7; to: 1.45 1.45 1.45; dir: alternate; dur: ${280 + (Math.abs(col) * 35)}; loop: true; easing: easeInOutSine`
-          );
+          led.setAttribute("material", `shader: flat; color: ${color}`);
+          led.setAttribute("glow-sprite", `color: ${color}; size: 1.4; opacity: 0.55`);
+          // pulsazione lenta: niente lampeggi rapidi
+          led.setAttribute("animation",
+            `property: scale; from: 0.75 0.75 0.75; to: 1.35 1.35 1.35; dir: alternate; dur: ${1100 + (Math.abs(col) * 90) + (Math.abs(row) * 60)}; loop: true; easing: easeInOutSine`);
           container.appendChild(led);
         }
       }
@@ -1515,6 +2021,11 @@
     function clearVictoryCeilingLEDs() {
       const container = document.getElementById("victory-ceiling-leds");
       if (container) container.innerHTML = "";
+    }
+
+    function parsePos(str) {
+      const p = str.trim().split(/\s+/).map(Number);
+      return { x: p[0], y: p[1], z: p[2] };
     }
 
     function buildInteractiveModules() {
@@ -1543,38 +2054,75 @@
         ring.setAttribute("rotation", "90 0 0");
         ring.setAttribute("radius", "0.45");
         ring.setAttribute("radius-tubular", "0.03");
-        ring.setAttribute("color", "#ff00ea");
-        ring.setAttribute("material", "emissive: #ff00ea; emissiveIntensity: 1.8");
+        ring.setAttribute("material", "shader: flat; color: #ff00ea");
         wrapper.appendChild(ring);
+
+        const floatGroup = document.createElement("a-entity");
+        floatGroup.setAttribute("animation__bob",
+          `property: position; from: 0 0 0; to: 0 0.12 0; dir: alternate; dur: ${1500 + idx * 70}; loop: true; easing: easeInOutSine`);
+        wrapper.appendChild(floatGroup);
 
         const crystal = document.createElement("a-octahedron");
         crystal.setAttribute("id", `crystal-${idx}`);
-        crystal.setAttribute("class", "clickable");
         crystal.setAttribute("position", "0 0.65 0");
         crystal.setAttribute("radius", "0.42");
-        crystal.setAttribute("color", "#ff0055");
-        crystal.setAttribute("material", "emissive: #ff0055; emissiveIntensity: 1.6; roughness: 0.15; metalness: 0.3");
+        crystal.setAttribute("material", "color: #ff0055; emissive: #ff0055; emissiveIntensity: 1.2; roughness: 0.15; metalness: 0.3; flatShading: true");
         crystal.setAttribute("animation", "property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear");
+        floatGroup.appendChild(crystal);
 
-        crystal.addEventListener("click", (evt) => {
+        // guscio "olografico" in wireframe
+        const shell = document.createElement("a-octahedron");
+        shell.setAttribute("id", `shell-${idx}`);
+        shell.setAttribute("position", "0 0.65 0");
+        shell.setAttribute("radius", "0.55");
+        shell.setAttribute("material", "shader: flat; color: #ff66a3; wireframe: true; opacity: 0.45; transparent: true");
+        shell.setAttribute("animation", "property: rotation; to: 0 -360 0; loop: true; dur: 7000; easing: linear");
+        floatGroup.appendChild(shell);
+
+        const halo = document.createElement("a-entity");
+        halo.setAttribute("id", `halo-${idx}`);
+        halo.setAttribute("position", "0 0.65 0");
+        halo.setAttribute("glow-sprite", "color: #ff0055; size: 1.9; opacity: 0.45");
+        floatGroup.appendChild(halo);
+
+        // area puntabile più grande del cristallo: più facile da colpire, anche da lontano in VR
+        const hit = document.createElement("a-sphere");
+        hit.setAttribute("id", `crystal-hit-${idx}`);
+        hit.setAttribute("class", "clickable crystal-hit");
+        hit.setAttribute("position", "0 0.65 0");
+        hit.setAttribute("radius", "0.85");
+        hit.setAttribute("material", "opacity: 0; transparent: true; depthWrite: false");
+        hit.addEventListener("click", (evt) => {
           evt.stopPropagation();
           openQuizForModule(idx);
         });
+        hit.addEventListener("mouseenter", () => setCrystalHover(idx, true));
+        hit.addEventListener("mouseleave", () => setCrystalHover(idx, false));
+        floatGroup.appendChild(hit);
 
-        wrapper.appendChild(crystal);
-
-        const label = document.createElement("a-text");
+        const label = document.createElement("a-entity");
         label.setAttribute("id", `label-${idx}`);
-        label.setAttribute("value", `${mod.label}\n[BLOCCATO]`);
-        label.setAttribute("position", "0 1.38 0");
-        label.setAttribute("align", "center");
-        label.setAttribute("color", "#ff6699");
-        label.setAttribute("width", "3.6");
-        label.setAttribute("look-at", "#player-camera");
+        label.setAttribute("position", "0 1.55 0");
+        label.setAttribute("face-camera", "");
+        label.setAttribute("neon-label", {
+          text: `${mod.label}\n[BLOCCATO]`, width: 1.9, height: 0.62, size: 0.22,
+          color: "#ff6699", glow: "#ff0055", font: "title", bg: "rgba(4,8,20,0.75)", radius: 0.1
+        });
         wrapper.appendChild(label);
 
         container.appendChild(wrapper);
       });
+      refreshRaycasters();
+    }
+
+    function setCrystalHover(idx, on) {
+      const halo = document.getElementById(`halo-${idx}`);
+      const shell = document.getElementById(`shell-${idx}`);
+      const solved = gameState.solved[idx];
+      const color = solved ? FLUO_CYLINDER_PALETTE[idx].hex : (on ? "#ffe600" : "#ff0055");
+      if (halo) halo.setAttribute("glow-sprite", { color: color, size: on ? 2.6 : 1.9, opacity: on ? 0.8 : 0.45 });
+      if (shell) shell.setAttribute("material", "color", on ? "#ffe600" : (solved ? color : "#ff66a3"));
+      if (on && !gameState.completed) audioEngine.playHover();
     }
 
     function sealAllGemsInGlassCylinders() {
@@ -1585,41 +2133,51 @@
         const glassDome = document.createElement("a-cylinder");
         glassDome.setAttribute("id", `glass-seal-${idx}`);
         glassDome.setAttribute("position", "0 0.65 0");
-        glassDome.setAttribute("radius", "0.56");
-        glassDome.setAttribute("height", "1.34");
+        glassDome.setAttribute("radius", "0.62");
+        glassDome.setAttribute("height", "1.5");
         glassDome.setAttribute("open-ended", "false");
-        glassDome.setAttribute(
-          "material",
-          "color: #66f7ff; emissive: #00f3ff; emissiveIntensity: 0.35; opacity: 0.48; transparent: true; roughness: 0.08; metalness: 0.35; side: double"
-        );
-        glassDome.setAttribute(
-          "animation",
-          "property: scale; from: 0.1 0.05 0.1; to: 1 1 1; dur: 850; easing: easeOutBack"
-        );
+        glassDome.setAttribute("material",
+          "color: #66f7ff; emissive: #00f3ff; emissiveIntensity: 0.35; opacity: 0.35; transparent: true; roughness: 0.08; metalness: 0.35; side: double; depthWrite: false");
+        glassDome.setAttribute("animation", "property: scale; from: 0.1 0.05 0.1; to: 1 1 1; dur: 850; easing: easeOutBack");
         wrapper.appendChild(glassDome);
 
         const topRim = document.createElement("a-torus");
-        topRim.setAttribute("position", "0 1.31 0");
+        topRim.setAttribute("position", "0 1.4 0");
         topRim.setAttribute("rotation", "90 0 0");
-        topRim.setAttribute("radius", "0.56");
+        topRim.setAttribute("radius", "0.62");
         topRim.setAttribute("radius-tubular", "0.025");
-        topRim.setAttribute("color", "#00f3ff");
-        topRim.setAttribute("material", "emissive: #00f3ff; emissiveIntensity: 2.2");
+        topRim.setAttribute("material", "shader: flat; color: #00f3ff");
         wrapper.appendChild(topRim);
 
         const bottomRim = document.createElement("a-torus");
         bottomRim.setAttribute("position", "0 0.01 0");
         bottomRim.setAttribute("rotation", "90 0 0");
-        bottomRim.setAttribute("radius", "0.56");
+        bottomRim.setAttribute("radius", "0.62");
         bottomRim.setAttribute("radius-tubular", "0.025");
-        bottomRim.setAttribute("color", "#39ff14");
-        bottomRim.setAttribute("material", "emissive: #39ff14; emissiveIntensity: 2.2");
+        bottomRim.setAttribute("material", "shader: flat; color: #39ff14");
         wrapper.appendChild(bottomRim);
       });
     }
 
+    /** In VR il pannello domande compare davanti al giocatore e resta fermo nel mondo. */
+    function placeVRPanelInFront() {
+      const panel = document.getElementById("quiz-panel-vr");
+      const cam = document.querySelector("a-scene").camera;
+      const p = new THREE.Vector3();
+      const dir = new THREE.Vector3();
+      cam.getWorldPosition(p);
+      cam.getWorldDirection(dir);
+      dir.y = 0;
+      if (dir.lengthSq() < 0.0001) dir.set(0, 0, -1);
+      dir.normalize();
+      panel.object3D.position.set(p.x + dir.x * 1.55, p.y - 0.12, p.z + dir.z * 1.55);
+      panel.object3D.rotation.set(0, Math.atan2(-dir.x, -dir.z), 0);
+    }
+
     function openQuizForModule(idx) {
+      // durante i 2 secondi di chiusura dopo una risposta giusta non si apre un altro nodo
       if (gameState.completed || gameState.isClosingSuccess) return;
+      if (!gameState.started) beginMission();
       clearTimeout(gameState.autoCloseTimeout);
 
       if (gameState.solved[idx]) {
@@ -1631,24 +2189,24 @@
       gameState.activeModuleIndex = idx;
       audioEngine.playSelect();
       const qData = activeQuestions[idx];
+      const letters = ["A", "B", "C"];
 
       if (isVRModeActive()) {
-        const panel = document.getElementById("quiz-panel-vr");
-        document.getElementById("quiz-module-title").setAttribute("value", `NODO ${idx + 1}/10 • ${qData.title}`);
-        document.getElementById("quiz-question-text").setAttribute("value", qData.question);
-        document.getElementById("quiz-feedback-text").setAttribute("value", "");
-
-        const letters = ["A", "B", "C"];
+        setLabel("quiz-module-title", { text: `NODO ${idx + 1}/10 • ${qData.title}` });
+        setLabel("quiz-question-text", { text: qData.question });
+        setLabel("quiz-feedback-text", { text: "" });
         qData.options.forEach((optText, i) => {
-          document.getElementById(`opt-txt-${i}`).setAttribute("value", `${letters[i]}) ${optText}`);
-          document.getElementById(`opt-bg-${i}`).setAttribute("color", "#0c1d3d");
+          setLabel(`opt-bg-${i}`, { text: `${letters[i]}) ${optText}`, bg: "#0c1d3d", color: "#00f3ff", border: "#00f3ff" });
         });
-
-        panel.setAttribute("visible", "true");
-        panel.setAttribute("animation", "property: scale; from: 0.01 0.01 0.01; to: 1 1 1; dur: 220; easing: easeOutBack");
+        placeVRPanelInFront();
+        const panel = document.getElementById("quiz-panel-vr");
+        panel.removeAttribute("animation");
+        panel.object3D.scale.set(0.05, 0.05, 0.05);
+        panel.setAttribute("animation", "property: scale; from: 0.05 0.05 0.05; to: 1 1 1; dur: 220; easing: easeOutBack");
         setVRPanelInteractable(true);
       } else {
         setCameraLookEnabled(false);
+        setMovementEnabled(false);
 
         const modal = document.getElementById("desktop-quiz-modal");
         const badge = document.getElementById("dt-quiz-badge");
@@ -1662,23 +2220,22 @@
         feedback.style.background = "transparent";
         grid.innerHTML = "";
 
-        const letters = ["A", "B", "C"];
         qData.options.forEach((optText, i) => {
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "dt-option-btn";
           btn.textContent = `${letters[i]}) ${optText}`;
-
-          const handleAnswer = (e) => {
+          btn.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
             submitAnswer(i);
-          };
-          btn.addEventListener("click", handleAnswer);
+          });
           grid.appendChild(btn);
         });
 
         modal.style.display = "flex";
+        const first = grid.querySelector("button");
+        if (first) first.focus({ preventScroll: true });
       }
     }
 
@@ -1686,21 +2243,12 @@
       clearTimeout(gameState.autoCloseTimeout);
       gameState.isClosingSuccess = false;
       gameState.activeModuleIndex = null;
-
-      const vrPanel = document.getElementById("quiz-panel-vr");
-      if (vrPanel) {
-        vrPanel.setAttribute("visible", "false");
-        vrPanel.setAttribute("scale", "0.001 0.001 0.001");
-      }
       setVRPanelInteractable(false);
-
       const dtModal = document.getElementById("desktop-quiz-modal");
-      if (dtModal) {
-        dtModal.style.display = "none";
-      }
-
-      if (!gameState.completed) {
+      if (dtModal) dtModal.style.display = "none";
+      if (!gameState.introTurn) {
         setCameraLookEnabled(true);
+        setMovementEnabled(true);
       }
     }
 
@@ -1711,7 +2259,6 @@
       const qData = activeQuestions[idx];
       gameState.attempts++;
 
-      const vrFeedbackEl = document.getElementById("quiz-feedback-text");
       const dtFeedbackEl = document.getElementById("dt-feedback");
       const dtButtons = document.querySelectorAll("#dt-options-grid .dt-option-btn");
 
@@ -1719,80 +2266,44 @@
         gameState.solved[idx] = true;
         audioEngine.playSuccess();
 
+        gameState.combo++;
         const praise = BITBOT_PRAISES[Math.floor(Math.random() * BITBOT_PRAISES.length)];
-        showBitBotMessage(praise);
+        showBitBotMessage(gameState.combo >= 3 ? `${praise} COMBO x${gameState.combo}!` : praise);
 
-        const vrBg = document.getElementById(`opt-bg-${optionIdx}`);
-        if (vrBg) vrBg.setAttribute("color", "#14532d");
-        if (vrFeedbackEl) {
-          vrFeedbackEl.setAttribute("color", "#39ff14");
-          vrFeedbackEl.setAttribute("value", "CORRETTO! Chiusura automatica in 2 secondi...");
-        }
+        setLabel(`opt-bg-${optionIdx}`, { bg: "#14532d", color: "#39ff14", border: "#39ff14" });
+        setLabel("quiz-feedback-text", { text: "CORRETTO! Chiusura automatica in 2 secondi...", color: "#39ff14" });
+        ["opt-bg-0", "opt-bg-1", "opt-bg-2"].forEach((id) => setInteractive(document.getElementById(id), false));
 
-        if (dtButtons[optionIdx]) {
-          dtButtons[optionIdx].classList.add("correct");
-        }
-        dtButtons.forEach(b => b.disabled = true);
-
+        if (dtButtons[optionIdx]) dtButtons[optionIdx].classList.add("correct");
+        dtButtons.forEach((b) => (b.disabled = true));
         if (dtFeedbackEl) {
           dtFeedbackEl.style.color = "#39ff14";
           dtFeedbackEl.style.background = "rgba(57, 255, 20, 0.14)";
           dtFeedbackEl.textContent = "CORRETTO! Modulo sincronizzato. Chiusura automatica in 2 secondi...";
         }
 
-        const fluo = FLUO_CYLINDER_PALETTE[idx % FLUO_CYLINDER_PALETTE.length];
-        const pedestal = document.getElementById(`pedestal-${idx}`);
-        if (pedestal) {
-          pedestal.setAttribute("color", fluo.hex);
-          pedestal.setAttribute("material", `emissive: ${fluo.hex}; emissiveIntensity: 1.9; roughness: 0.2; metalness: 0.3`);
-        }
+        activateCrystal(idx);
+        updateProgressHUD(true);
 
-        const crystal = document.getElementById(`crystal-${idx}`);
-        const ring = document.getElementById(`ring-${idx}`);
-        const label = document.getElementById(`label-${idx}`);
-
-        if (crystal) {
-          crystal.setAttribute("color", "#39ff14");
-          crystal.setAttribute("material", "emissive: #39ff14; emissiveIntensity: 2.0");
-        }
-        if (ring) {
-          ring.setAttribute("color", fluo.hex);
-          ring.setAttribute("material", `emissive: ${fluo.hex}; emissiveIntensity: 2.2`);
-        }
-        if (label) {
-          label.setAttribute("value", `NODO ${idx + 1}\n[ATTIVO]`);
-          label.setAttribute("color", fluo.hex);
-        }
-
-        gameState.combo++;
-        updateProgressHUD();
-
-        const solvedNow = gameState.solved.filter(Boolean).length;
-        const isLastQuestion = solvedNow === 10;
         gameState.isClosingSuccess = true;
-
         gameState.autoCloseTimeout = setTimeout(() => {
           closeQuizPanel();
-          if (isLastQuestion) {
-            checkVictoryCondition();
-          }
+          checkVictoryCondition();
         }, 2000);
       } else {
         audioEngine.playError();
         gameState.combo = 1;
-        updateProgressHUD();
+        updateProgressHUD(false);
 
         const hintMsg = BITBOT_HINTS[Math.floor(Math.random() * BITBOT_HINTS.length)];
         showBitBotMessage(hintMsg);
 
-        const vrBg = document.getElementById(`opt-bg-${optionIdx}`);
-        if (vrBg) vrBg.setAttribute("color", "#7f1d1d");
-        if (vrFeedbackEl) {
-          vrFeedbackEl.setAttribute("color", "#ff6699");
-          vrFeedbackEl.setAttribute("value", `Riprova! ${qData.hint}`);
-        }
+        setLabel(`opt-bg-${optionIdx}`, { bg: "#7f1d1d", color: "#ff99bb", border: "#ff0055" });
+        setLabel("quiz-feedback-text", { text: `Riprova! ${qData.hint}`, color: "#ff6699" });
 
         if (dtButtons[optionIdx]) {
+          dtButtons[optionIdx].classList.remove("wrong");
+          void dtButtons[optionIdx].offsetWidth;
           dtButtons[optionIdx].classList.add("wrong");
         }
         if (dtFeedbackEl) {
@@ -1803,175 +2314,620 @@
       }
     }
 
-    function updateProgressHUD() {
+    /** Il cristallo risolto diventa verde, il piedistallo e l'anello prendono un colore fluo. */
+    function activateCrystal(idx) {
+      const fluo = FLUO_CYLINDER_PALETTE[idx % FLUO_CYLINDER_PALETTE.length];
+      const pedestal = document.getElementById(`pedestal-${idx}`);
+      if (pedestal) {
+        pedestal.setAttribute("material", `color: ${fluo.hex}; emissive: ${fluo.hex}; emissiveIntensity: 1.6; roughness: 0.2; metalness: 0.3`);
+      }
+      const crystal = document.getElementById(`crystal-${idx}`);
+      if (crystal) crystal.setAttribute("material", "color: #39ff14; emissive: #39ff14; emissiveIntensity: 1.6; flatShading: true");
+      const ring = document.getElementById(`ring-${idx}`);
+      if (ring) ring.setAttribute("material", `shader: flat; color: ${fluo.hex}`);
+      const shell = document.getElementById(`shell-${idx}`);
+      if (shell) shell.setAttribute("material", "color", fluo.hex);
+      const halo = document.getElementById(`halo-${idx}`);
+      if (halo) halo.setAttribute("glow-sprite", { color: fluo.hex, size: 2.4, opacity: 0.7 });
+      setLabel(`label-${idx}`, { text: `NODO ${idx + 1}\n[ATTIVO]`, color: fluo.hex, glow: fluo.hex });
+      // piccola fontana di particelle colorate
+      const vfx = document.querySelector("a-scene").components["starship-vfx"];
+      const p = parsePos(MODULE_POSITIONS[idx].pos);
+      if (vfx) vfx.fountain(p.x, p.y + 0.7, p.z, fluo.hex, 70);
+    }
+
+    function updateProgressHUD(bump) {
       const solvedCount = gameState.solved.filter(Boolean).length;
       const hudProgress = document.getElementById("hud-progress");
       if (hudProgress) hudProgress.textContent = `${solvedCount} / 10`;
 
       const comboEl = document.getElementById("hud-combo");
-      if (comboEl) comboEl.textContent = `x${gameState.combo}`;
-
-      const doorStatus = document.getElementById("door-status-text");
-      const doorSub = document.getElementById("door-sub-text");
-
-      if (solvedCount < 10) {
-        if (doorStatus) {
-          doorStatus.setAttribute("value", `SERRANDA BLOCCATA: ${solvedCount} / 10`);
-          doorStatus.setAttribute("color", solvedCount >= 7 ? "#ffe600" : "#ff0055");
-        }
-      } else {
-        if (doorStatus) {
-          doorStatus.setAttribute("value", "SERRANDA SBLOCCATA: 10 / 10");
-          doorStatus.setAttribute("color", "#39ff14");
-        }
-        if (doorSub) {
-          doorSub.setAttribute("value", "APERTURA SCHERMO PRINCIPALE IN CORSO!");
+      if (comboEl) {
+        comboEl.textContent = `x${gameState.combo}`;
+        if (bump) {
+          comboEl.classList.remove("combo-bump");
+          void comboEl.offsetWidth;
+          comboEl.classList.add("combo-bump");
         }
       }
+
+      if (solvedCount < 10) {
+        setLabel("door-status-text", {
+          text: `SERRANDA BLOCCATA: ${solvedCount} / 10`,
+          color: solvedCount >= 7 ? "#ffe600" : "#ff0055",
+          glow: solvedCount >= 7 ? "#ffb300" : "#ff0055"
+        });
+        setLabel("door-sub-text", { text: "ATTIVA TUTTI I 10 MODULI PER SOLLEVARE LA PARETE" });
+      } else {
+        setLabel("door-status-text", { text: "SERRANDA SBLOCCATA: 10 / 10", color: "#39ff14", glow: "#39ff14" });
+        setLabel("door-sub-text", { text: "APERTURA SCHERMO PRINCIPALE IN CORSO!" });
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 5. GRAN FINALE
+     *    raggi di luce dai cristalli → serranda con scintille → maxischermo
+     *    animato con stelle e punteggio → fuochi d'artificio, coriandoli,
+     *    neon arcobaleno e Bit-Bot che balla.
+     * =========================================================================
+     */
+    function later(ms, fn) {
+      gameState.victoryTimers.push(setTimeout(fn, ms));
     }
 
     function checkVictoryCondition() {
       const solvedCount = gameState.solved.filter(Boolean).length;
-      if (solvedCount < 10 || gameState.completed) return;
-
+      if (solvedCount !== 10 || gameState.completed) return;
       gameState.completed = true;
       stopMissionTimer();
+      gameState.victoryStart = performance.now();
 
-      const elapsedStr = gameState.startTime ? formatTime(Date.now() - gameState.startTime) : "00:00";
-      const accuracy = Math.min(100, Math.round((10 / Math.max(10, gameState.attempts)) * 100));
+      gameState.elapsedStr = gameState.startTime ? formatTime(Date.now() - gameState.startTime) : "00:00";
+      gameState.accuracy = Math.min(100, Math.round((10 / Math.max(10, gameState.attempts)) * 100));
+
+      const vfx = document.querySelector("a-scene").components["starship-vfx"];
 
       // 1. Musica celebrativa di vittoria
-      try {
-        audioEngine.switchToVictoryMusic();
-      } catch (e) {}
+      audioEngine.switchToVictoryMusic();
+      showBitBotMessage("TUTTI I MODULI ATTIVI! GUARDA LA SERRANDA! 🚀");
 
-      // 2. LED lampeggianti sul soffitto
-      try {
+      // 2. Il giocatore viene accompagnato davanti alla serranda (solo PC/smartphone, in modo fluido).
+      //    In VR nessuno spostamento forzato: evita il mal di movimento.
+      if (!isVRModeActive()) startIntroTurn();
+
+      // 3. Bit-Bot vola di lato (così non copre il maxischermo) e balla
+      const bot = document.getElementById("bitbot-mascot");
+      bot.setAttribute("animation__move", "property: position; to: -4.6 3.4 -6.2; dur: 1800; easing: easeInOutCubic");
+      bot.setAttribute("animation__dance", "property: rotation; from: 0 0 0; to: 0 360 0; dur: 2600; loop: true; easing: easeInOutSine; delay: 1800");
+
+      // 4. Raggi di luce dai cristalli, uno dopo l'altro, e cilindri di vetro
+      sealAllGemsInGlassCylinders();
+      MODULE_POSITIONS.forEach((mod, idx) => {
+        later(250 + idx * 170, () => {
+          createBeam(idx);
+          audioEngine.playBeam(idx);
+          const p = parsePos(mod.pos);
+          if (vfx) vfx.fountain(p.x, p.y + 1.3, p.z, FLUO_CYLINDER_PALETTE[idx].hex, 90);
+        });
+      });
+
+      // 5. LED sul soffitto e neon arcobaleno
+      later(1500, () => {
         createVictoryCeilingLEDs();
-      } catch (e) {}
+        gameState.rainbow = true;
+      });
 
-      // 3. Cilindri trasparenti attorno alle 10 gemme
-      try {
-        sealAllGemsInGlassCylinders();
-      } catch (e) {}
+      // 6. La serranda si solleva rivelando il maxischermo, con scintille
+      later(2200, () => {
+        const shutter = document.getElementById("shutter-gate");
+        shutter.setAttribute("animation", "property: position; to: 0 5.65 0.1; dur: 2800; easing: easeInOutQuad");
+        gameState.shutterRising = true;
+        audioEngine.playShutter();
+        drawVictoryScreen(0);
+        gameState.screenAnim = true;
+      });
+      later(5100, () => { gameState.shutterRising = false; });
 
-      // 4. Aggiorna i testi sul maxischermo
-      const bigScore = document.getElementById("victory-big-score");
-      if (bigScore) {
-        bigScore.setAttribute("value", `PUNTEGGIO FINALE: 10 / 10 (${accuracy}%)`);
-      }
-      const statsMsg = document.getElementById("victory-stats-msg");
-      if (statsMsg) {
-        statsMsg.setAttribute("value", `Tempo: ${elapsedStr} | Precisione: ${accuracy}%`);
-      }
+      // 7. Pulsante "nuova missione" e testi finali
+      later(5200, () => {
+        setInteractive(document.getElementById("btn-screen-new-mission"), true);
+        showBitBotMessage("Sei idoneo per essere un nostro grande studente del Liceo Scientifico Pasolini di Potenza! 🎓");
+      });
 
-      // 5. Ruota automaticamente il giocatore frontalmente verso la serranda
+      // 8. Fuochi d'artificio e coriandoli
+      later(4200, () => { if (vfx) vfx.startConfetti(); });
+      later(16000, () => { if (vfx) vfx.stopConfetti(); });
+      const show = [
+        [4600, -4, -5], [5100, 4, -5], [5600, 0, -6.5], [6200, -6, -2], [6600, 6, -2],
+        [7300, -2.5, -4], [7700, 2.5, -4], [8400, 0, -3], [9100, -5, 1], [9500, 5, 1],
+        [10200, -3, -6], [10500, 3, -6], [11000, 0, -5], [11300, -1.5, -5.5], [11600, 1.5, -5.5]
+      ];
+      const palettes = [
+        ["#39ff14", "#00f3ff"], ["#ff00ea", "#ffe600"], ["#00f3ff", "#ffffff"], ["#ffe600", "#ff6600"],
+        ["#b829ff", "#ff3399"], ["#00ffaa", "#39ff14"], ["#ff00ea", "#00f3ff", "#ffe600"]
+      ];
+      show.forEach(([ms, x, z], i) => {
+        later(ms, () => {
+          if (!vfx) return;
+          audioEngine.playWhistle();
+          vfx.launch(x, z, palettes[i % palettes.length], () => audioEngine.playBoom());
+        });
+      });
+      // dopo lo spettacolo, un fuoco ogni tanto finché si resta nella schermata finale
+      later(13000, () => {
+        gameState.victoryTimers.push(setInterval(() => {
+          if (!vfx || !gameState.completed) return;
+          const x = (Math.random() - 0.5) * 10;
+          vfx.launch(x, -3 - Math.random() * 3, palettes[Math.floor(Math.random() * palettes.length)], () => audioEngine.playBoom());
+        }, 2600));
+      });
+    }
+
+    /** Raggio di luce verticale dal cristallo al soffitto. */
+    let beamTexture = null;
+    function getBeamTexture() {
+      if (beamTexture) return beamTexture;
+      const c = document.createElement("canvas");
+      c.width = 4; c.height = 256;
+      const g = c.getContext("2d");
+      const grd = g.createLinearGradient(0, 0, 0, 256);
+      grd.addColorStop(0, "rgba(255,255,255,0)");
+      grd.addColorStop(0.5, "rgba(255,255,255,0.35)");
+      grd.addColorStop(1, "rgba(255,255,255,0.95)");
+      g.fillStyle = grd;
+      g.fillRect(0, 0, 4, 256);
+      beamTexture = new THREE.CanvasTexture(c);
+      return beamTexture;
+    }
+
+    function createBeam(idx) {
+      const p = parsePos(MODULE_POSITIONS[idx].pos);
+      const color = FLUO_CYLINDER_PALETTE[idx].hex;
+      const beam = document.createElement("a-entity");
+      beam.setAttribute("position", `${p.x} ${p.y + 0.65} ${p.z}`);
+      const mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.16, 0.3, 3.6, 24, 1, true),
+        new THREE.MeshBasicMaterial({
+          map: getBeamTexture(), color: new THREE.Color(color), transparent: true, opacity: 0.9,
+          blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false
+        })
+      );
+      mesh.position.y = 1.8;
+      beam.setObject3D("mesh", mesh);
+      beam.object3D.scale.set(1, 0.01, 1);
+      beam.setAttribute("animation", "property: scale; from: 1 0.01 1; to: 1 1 1; dur: 600; easing: easeOutCubic");
+      beam.setAttribute("animation__pulse", "property: scale; from: 1 1 1; to: 1.25 1 1.25; dir: alternate; loop: true; dur: 1400; delay: 600; easing: easeInOutSine");
+      document.getElementById("victory-beams").appendChild(beam);
+    }
+
+    /** Accompagna dolcemente il giocatore davanti alla serranda (PC / smartphone). */
+    function startIntroTurn() {
       const rig = document.getElementById("player-rig");
       const cam = document.getElementById("player-camera");
+      const lc = cam.components["look-controls"];
       setCameraLookEnabled(false);
+      setMovementEnabled(false);
+      gameState.introTurn = {
+        t: 0, dur: 1800,
+        fromPos: rig.object3D.position.clone(),
+        toPos: new THREE.Vector3(0, 0, -2.6),
+        fromYaw: lc ? lc.yawObject.rotation.y : 0,
+        fromPitch: lc ? lc.pitchObject.rotation.x : 0
+      };
+      rig.object3D.rotation.set(0, 0, 0);
+      // percorso più breve per la rotazione
+      const it = gameState.introTurn;
+      it.fromYaw = Math.atan2(Math.sin(it.fromYaw), Math.cos(it.fromYaw));
+    }
 
-      if (rig && rig.object3D) {
-        rig.object3D.position.set(0, 0, 1.4);
-        rig.object3D.rotation.set(0, 0, 0);
+    function updateIntroTurn(dt) {
+      const it = gameState.introTurn;
+      if (!it) return;
+      it.t = Math.min(1, it.t + dt / it.dur);
+      const k = it.t < 0.5 ? 4 * it.t * it.t * it.t : 1 - Math.pow(-2 * it.t + 2, 3) / 2;
+      const rig = document.getElementById("player-rig");
+      const lc = document.getElementById("player-camera").components["look-controls"];
+      rig.object3D.position.lerpVectors(it.fromPos, it.toPos, k);
+      if (lc) {
+        lc.yawObject.rotation.y = it.fromYaw * (1 - k);
+        lc.pitchObject.rotation.x = it.fromPitch * (1 - k) + 0.12 * k;
       }
+      if (it.t >= 1) {
+        gameState.introTurn = null;
+        // poi si può di nuovo guardare in giro (per i fuochi d'artificio)
+        setCameraLookEnabled(true);
+        setMovementEnabled(true);
+      }
+    }
 
-      if (cam && cam.object3D) {
-        const lookCtrl = cam.components && cam.components["look-controls"];
-        if (lookCtrl) {
-          if (lookCtrl.yawObject) lookCtrl.yawObject.rotation.y = 0;
-          if (lookCtrl.pitchObject) lookCtrl.pitchObject.rotation.x = 0;
+    /** Neon che cambiano colore a onda, lentamente (nessun lampeggio). */
+    const rainbowColor = new THREE.Color();
+    function updateRainbow(time) {
+      document.querySelectorAll(".neon-strip").forEach((s, i) => {
+        const m = s.getObject3D("mesh");
+        if (!m) return;
+        if (gameState.rainbow) {
+          rainbowColor.setHSL(((time / 6000) + i * 0.11) % 1, 1, 0.55);
+          m.material.color.copy(rainbowColor);
         }
-        cam.object3D.rotation.set(0, 0, 0);
+      });
+      if (gameState.rainbow) {
+        const L = ["light-main", "light-magenta", "light-green"];
+        L.forEach((id, i) => {
+          const l = document.getElementById(id);
+          const light = l && l.getObject3D("light");
+          if (light) light.color.setHSL(((time / 7000) + i * 0.33) % 1, 1, 0.55);
+        });
+      }
+    }
 
-        if (rig && rig.object3D && typeof THREE !== "undefined") {
-          const worldDir = new THREE.Vector3();
-          cam.object3D.getWorldDirection(worldDir);
-          const currentYaw = Math.atan2(-worldDir.x, -worldDir.z);
-          rig.object3D.rotation.y = -currentYaw;
+    function restoreNeonColors() {
+      document.querySelectorAll(".neon-strip").forEach((s) => {
+        const m = s.getObject3D("mesh");
+        if (m) m.material.color.set(s.dataset.color);
+      });
+      [["light-main", "#00f3ff"], ["light-magenta", "#ff00ea"], ["light-green", "#39ff14"]].forEach(([id, c]) => {
+        const l = document.getElementById(id);
+        const light = l && l.getObject3D("light");
+        if (light) light.color.set(c);
+      });
+    }
+
+    /* ----- Maxischermo animato (canvas) ----- */
+    const victoryScreen = { canvas: null, ctx: null, tex: null, stars: [], lastDraw: 0 };
+
+    function initVictoryScreen() {
+      const host = document.getElementById("victory-screen");
+      const c = document.createElement("canvas");
+      c.width = 1536; c.height = 828;
+      victoryScreen.canvas = c;
+      victoryScreen.ctx = c.getContext("2d");
+      victoryScreen.tex = StarshipFX.makeTexture(c);
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(6.6, 3.56),
+        new THREE.MeshBasicMaterial({ map: victoryScreen.tex, toneMapped: false, fog: false }));
+      host.setObject3D("mesh", mesh);
+      for (let i = 0; i < 140; i++) {
+        victoryScreen.stars.push({ x: Math.random() * c.width, y: Math.random() * c.height, s: 0.5 + Math.random() * 2, v: 20 + Math.random() * 80 });
+      }
+      drawVictoryScreen(-1);
+    }
+
+    function starPath(ctx, cx, cy, r) {
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + i * Math.PI / 5;
+        const rr = i % 2 === 0 ? r : r * 0.45;
+        ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+      }
+      ctx.closePath();
+    }
+
+    function easeOutBack(k) {
+      const c1 = 1.70158, c3 = c1 + 1;
+      return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2);
+    }
+
+    /** t = secondi dall'apertura della serranda; t < 0 = schermo spento. */
+    function drawVictoryScreen(t) {
+      const ctx = victoryScreen.ctx;
+      if (!ctx) return;
+      const W = victoryScreen.canvas.width, H = victoryScreen.canvas.height;
+      const bg = ctx.createRadialGradient(W / 2, H * 0.4, 50, W / 2, H / 2, W * 0.7);
+      bg.addColorStop(0, t < 0 ? "#050a1a" : "#0d2350");
+      bg.addColorStop(1, "#020513");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+      if (t < 0) { victoryScreen.tex.needsUpdate = true; return; }
+
+      // stelle che scorrono
+      victoryScreen.stars.forEach((s) => {
+        const x = (s.x + s.v * t) % W;
+        ctx.fillStyle = `rgba(180,220,255,${0.35 + s.s / 4})`;
+        ctx.fillRect(x, s.y, s.s, s.s);
+      });
+      const FT = StarshipFX.FONT_TITLE, FB = StarshipFX.FONT_BODY;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // titolo
+      const kT = Math.min(1, t / 0.7);
+      const sT = Math.max(0.01, easeOutBack(kT));
+      ctx.save();
+      ctx.translate(W / 2, 140);
+      ctx.scale(sT, sT);
+      const grad = ctx.createLinearGradient(-560, 0, 560, 0);
+      const shift = (t * 0.25) % 1;
+      grad.addColorStop(0, "#00f3ff");
+      grad.addColorStop((0.33 + shift) % 1, "#39ff14");
+      grad.addColorStop((0.66 + shift) % 1, "#ff00ea");
+      grad.addColorStop(1, "#00f3ff");
+      ctx.font = `900 112px ${FT}`;
+      const titleW = ctx.measureText("MISSIONE COMPLETATA!").width;
+      if (titleW > 1400) ctx.scale(1400 / titleW, 1400 / titleW);
+      ctx.shadowColor = "#00f3ff";
+      ctx.shadowBlur = 36;
+      ctx.fillStyle = grad;
+      ctx.fillText("MISSIONE COMPLETATA!", 0, 0);
+      ctx.restore();
+
+      // stelle di valutazione
+      const acc = gameState.accuracy;
+      const earned = acc >= 90 ? 3 : acc >= 65 ? 2 : 1;
+      for (let i = 0; i < 3; i++) {
+        const appear = 0.8 + i * 0.35;
+        const k = Math.max(0, Math.min(1, (t - appear) / 0.45));
+        const s = i < earned ? easeOutBack(k) : 1;
+        const cx = W / 2 + (i - 1) * 130, cy = 290;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(Math.max(0.01, s), Math.max(0.01, s));
+        starPath(ctx, 0, 0, 52);
+        if (i < earned && k > 0) {
+          ctx.shadowColor = "#ffe600";
+          ctx.shadowBlur = 30;
+          ctx.fillStyle = "#ffe600";
+          ctx.fill();
+        } else {
+          ctx.lineWidth = 5;
+          ctx.strokeStyle = "rgba(255,230,0,0.35)";
+          ctx.stroke();
         }
+        ctx.restore();
       }
 
-      // 6. Solleva immediatamente la serranda rivelando il maxischermo
-      const shutter = document.getElementById("shutter-gate");
-      if (shutter) {
-        shutter.removeAttribute("animation");
-        shutter.setAttribute(
-          "animation",
-          "property: position; to: 0 5.65 0.1; dur: 2400; easing: easeInOutQuad"
-        );
-      }
+      // punteggio che conta da 0 a 10
+      const count = Math.round(10 * Math.max(0, Math.min(1, (t - 0.5) / 1.2)));
+      ctx.font = `700 60px ${FT}`;
+      ctx.shadowColor = "#ffb300";
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = "#ffe600";
+      ctx.fillText(`PUNTEGGIO FINALE: ${count} / 10 (${acc}%)`, W / 2, 400);
+
+      // messaggio fisso della scuola
+      const kM = Math.max(0, Math.min(1, (t - 1.8) / 0.8));
+      ctx.globalAlpha = kM;
+      ctx.font = `700 54px ${FB}`;
+      ctx.shadowColor = "#39ff14";
+      ctx.shadowBlur = 16;
+      ctx.fillStyle = "#39ff14";
+      ctx.fillText("Sei idoneo per essere un nostro grande studente", W / 2, 500);
+      ctx.fillText("del Liceo Scientifico Pasolini di Potenza!", W / 2, 562);
+      ctx.shadowBlur = 0;
+      ctx.font = `700 40px ${FB}`;
+      ctx.fillStyle = "#e0f7ff";
+      ctx.fillText(`Tempo: ${gameState.elapsedStr} | Precisione: ${acc}%`, W / 2, 640);
+      ctx.globalAlpha = 1;
+      victoryScreen.tex.needsUpdate = true;
     }
 
     function resetGame(goToStartOverlay = true) {
       clearTimeout(gameState.autoCloseTimeout);
       gameState.isClosingSuccess = false;
+      gameState.victoryTimers.forEach((t) => { clearTimeout(t); clearInterval(t); });
+      gameState.victoryTimers = [];
       gameState.solved = new Array(10).fill(false);
       gameState.activeModuleIndex = null;
       gameState.attempts = 0;
       gameState.combo = 1;
       gameState.completed = false;
+      gameState.introTurn = null;
+      gameState.rainbow = false;
+      gameState.shutterRising = false;
+      gameState.screenAnim = false;
 
       closeQuizPanel();
-      updateProgressHUD();
+      updateProgressHUD(false);
       clearVictoryCeilingLEDs();
+      restoreNeonColors();
       audioEngine.switchToNormalMusic();
 
+      const vfx = document.querySelector("a-scene").components["starship-vfx"];
+      if (vfx) vfx.clearAll();
+      document.getElementById("victory-beams").innerHTML = "";
+
       setCameraLookEnabled(true);
+      setMovementEnabled(true);
       const rig = document.getElementById("player-rig");
       const cam = document.getElementById("player-camera");
-      if (rig) {
-        rig.setAttribute("position", "0 0 5.5");
-        rig.object3D.position.set(0, 0, 5.5);
-        rig.object3D.rotation.set(0, 0, 0);
-        rig.setAttribute("rotation", "0 0 0");
+      const start = isVRModeActive() ? VR_START_POSITION : DESKTOP_START_POSITION;
+      rig.object3D.position.set(start.x, start.y, start.z);
+      rig.object3D.rotation.set(0, 0, 0);
+      const lookCtrl = cam.components["look-controls"];
+      if (lookCtrl) {
+        lookCtrl.yawObject.rotation.y = 0;
+        lookCtrl.pitchObject.rotation.x = 0;
       }
-      if (cam) {
-        const lookCtrl = cam.components["look-controls"];
-        if (lookCtrl) {
-          if (lookCtrl.yawObject) lookCtrl.yawObject.rotation.y = 0;
-          if (lookCtrl.pitchObject) lookCtrl.pitchObject.rotation.x = 0;
-        }
-        cam.object3D.rotation.set(0, 0, 0);
-        cam.setAttribute("rotation", "0 0 0");
-      }
+
+      const bot = document.getElementById("bitbot-mascot");
+      bot.removeAttribute("animation__move");
+      bot.removeAttribute("animation__dance");
+      bot.object3D.position.set(-2.6, 2.4, -3.2);
+      bot.object3D.rotation.set(0, 0, 0);
+      setLabel("bitbot-3d-speech", { text: "CIAO! SONO BIT-BOT!" });
 
       const shutter = document.getElementById("shutter-gate");
-      if (shutter) {
-        shutter.removeAttribute("animation");
-        shutter.setAttribute("position", "0 1.9 0.1");
-      }
+      shutter.removeAttribute("animation");
+      shutter.object3D.position.set(0, 1.9, 0.1);
+      setInteractive(document.getElementById("btn-screen-new-mission"), false);
+      drawVictoryScreen(-1);
 
-      const doorStatus = document.getElementById("door-status-text");
-      const doorSub = document.getElementById("door-sub-text");
-      doorStatus.setAttribute("value", "SERRANDA BLOCCATA: 0 / 10");
-      doorStatus.setAttribute("color", "#ff0055");
-      doorSub.setAttribute("value", "ATTIVA TUTTI I 10 MODULI PER SOLLEVARE LA PARETE");
+      setLabel("door-status-text", { text: "SERRANDA BLOCCATA: 0 / 10", color: "#ff0055", glow: "#ff0055" });
+      setLabel("door-sub-text", { text: "ATTIVA TUTTI I 10 MODULI PER SOLLEVARE LA PARETE" });
 
       buildInteractiveModules();
 
       if (goToStartOverlay) {
+        gameState.started = false;
         stopMissionTimer();
+        const timerEl = document.getElementById("hud-timer");
+        if (timerEl) timerEl.textContent = "00:00";
         document.getElementById("pc-hud").style.display = "none";
         document.getElementById("mobile-move-controls").style.display = "none";
         document.getElementById("crosshair-hint").style.display = "none";
         const toast = document.getElementById("bitbot-toast");
         if (toast) toast.style.display = "none";
-        document.getElementById("start-overlay").style.display = "flex";
+        if (isVRModeActive()) {
+          setVisibleInteractive(document.getElementById("vr-start-panel"), true);
+        } else {
+          document.getElementById("start-overlay").style.display = "flex";
+        }
+        updateVRControlBar();
       } else {
         startMissionTimer();
         showBitBotMessage("Nuova partita avviata con 10 nuove sfide casuali!");
       }
     }
 
+    /** Avvio della missione (dal pulsante 2D o dal pannello 3D in VR). */
+    function beginMission() {
+      if (gameState.started) return;
+      gameState.started = true;
+      audioEngine.init();
+      audioEngine.startMusic();
+      audioEngine.playSelect();
+      document.getElementById("start-overlay").style.display = "none";
+      setVisibleInteractive(document.getElementById("vr-start-panel"), false);
+      if (!isVRModeActive()) {
+        document.getElementById("pc-hud").style.display = "flex";
+        document.getElementById("mobile-move-controls").style.display = "flex";
+        document.getElementById("crosshair-hint").style.display = "block";
+      }
+      startMissionTimer();
+      updateVRControlBar();
+      showBitBotMessage("Benvenuto sull'astronave Pasolini! Trova i 10 nodi neon!");
+    }
+
+    function updateVRControlBar() {
+      const bar = document.getElementById("vr-control-bar");
+      setVisibleInteractive(bar, isVRModeActive() && gameState.started);
+      setLabel("vr-audio-btn", { text: audioEngine.isMuted ? "🔇 AUDIO" : "🔊 AUDIO" });
+    }
+
+    function toggleAudio() {
+      audioEngine.init();
+      audioEngine.startMusic();
+      const active = audioEngine.toggleMute();
+      const audioBtn = document.getElementById("btn-audio-toggle");
+      audioBtn.textContent = active ? "🔊 AUDIO: ON" : "🔇 AUDIO: OFF";
+      updateVRControlBar();
+    }
+
+    /** Ciclo per animazioni del finale. */
+    AFRAME.registerComponent("starship-loop", {
+      tick: function (time, dt) {
+        updateIntroTurn(dt || 16);
+        if (gameState.rainbow) updateRainbow(time);
+        if (gameState.shutterRising) {
+          const vfx = this.el.components["starship-vfx"];
+          const shutter = document.getElementById("shutter-gate");
+          if (vfx && shutter) {
+            const bottom = shutter.object3D.position.y - 1.89;
+            vfx.sparks(-3.3, 3.3, bottom + 0.02, -8.75, 6);
+          }
+        }
+        if (gameState.screenAnim) {
+          const now = performance.now();
+          const t = (now - gameState.victoryStart) / 1000 - 2.2;
+          // ~25 fps durante l'animazione, poi 4 fps (stelle che scorrono)
+          const interval = t < 4 ? 40 : 250;
+          if (now - victoryScreen.lastDraw > interval) {
+            victoryScreen.lastDraw = now;
+            drawVictoryScreen(Math.max(0, t));
+          }
+        }
+      }
+    });
+    document.getElementById("main-scene").setAttribute("starship-loop", "");
+
     /**
      * =========================================================================
-     * 5. INIZIALIZZAZIONE EVENTI AL CARICAMENTO PAGINA
+     * 6. INIZIALIZZAZIONE EVENTI AL CARICAMENTO PAGINA
      * =========================================================================
      */
+    function setupScene() {
+      initVictoryScreen();
+      buildInteractiveModules();
+      setInteractive(document.getElementById("btn-screen-new-mission"), false);
+      setVRPanelInteractable(false);
+      updateVRControlBar();
+
+      const sceneEl = document.getElementById("main-scene");
+
+      // Pulsanti opzioni 3D (VR)
+      [0, 1, 2].forEach((i) => {
+        document.getElementById(`opt-bg-${i}`).addEventListener("click", (evt) => {
+          evt.stopPropagation();
+          submitAnswer(i);
+        });
+      });
+      document.getElementById("btn-close-bg").addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        closeQuizPanel();
+      });
+      document.getElementById("btn-screen-new-mission").addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        if (gameState.completed) resetGame(true);
+      });
+      document.getElementById("vr-start-button").addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        beginMission();
+      });
+      document.getElementById("vr-audio-btn").addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        toggleAudio();
+      });
+      document.getElementById("vr-reset-btn").addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        resetGame(true);
+      });
+
+      sceneEl.addEventListener("enter-vr", () => {
+        audioEngine.init();
+        document.getElementById("start-overlay").style.display = "none";
+        document.getElementById("pc-hud").style.display = "none";
+        document.getElementById("mobile-move-controls").style.display = "none";
+        document.getElementById("crosshair-hint").style.display = "none";
+        closeQuizPanel();
+        const rig = document.getElementById("player-rig");
+        rig.object3D.position.set(VR_START_POSITION.x, VR_START_POSITION.y, VR_START_POSITION.z);
+        rig.object3D.rotation.set(0, 0, 0);
+        gameState.introTurn = null;
+        if (!gameState.started) setVisibleInteractive(document.getElementById("vr-start-panel"), true);
+        updateVRControlBar();
+      });
+
+      sceneEl.addEventListener("exit-vr", () => {
+        setVRPanelInteractable(false);
+        setVisibleInteractive(document.getElementById("vr-start-panel"), false);
+        updateVRControlBar();
+        if (!gameState.started) {
+          document.getElementById("start-overlay").style.display = "flex";
+        } else {
+          document.getElementById("pc-hud").style.display = "flex";
+          document.getElementById("mobile-move-controls").style.display = "flex";
+          document.getElementById("crosshair-hint").style.display = "block";
+        }
+        if (gameState.activeModuleIndex !== null) closeQuizPanel();
+      });
+
+      window.StarshipGame.ready = true;
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
       generateNeonTextures();
-      createStarfield();
-      buildInteractiveModules();
+
+      // i font del titolo arrivano da Google Fonts: quando sono pronti ridisegniamo i testi 3D
+      if (document.fonts && document.fonts.load) {
+        Promise.all([
+          document.fonts.load("900 40px Orbitron"),
+          document.fonts.load("700 40px Rajdhani")
+        ]).catch(() => {}).then(() => window.dispatchEvent(new Event("starship-fonts-ready")));
+      }
+
+      const sceneEl = document.getElementById("main-scene");
+      if (sceneEl.hasLoaded) setupScene();
+      else sceneEl.addEventListener("loaded", setupScene);
 
       // Mantieni HUD e modali visibili anche in modalità Fullscreen
       const moveOverlaysIntoFullscreenTarget = () => {
@@ -1979,18 +2935,14 @@
         const targetParent = fsEl || document.body;
         ["pc-hud", "mobile-move-controls", "bitbot-toast", "crosshair-hint", "desktop-quiz-modal", "start-overlay"].forEach((id) => {
           const el = document.getElementById(id);
-          if (el && el.parentElement !== targetParent) {
-            targetParent.appendChild(el);
-          }
+          if (el && el.parentElement !== targetParent) targetParent.appendChild(el);
         });
       };
       document.addEventListener("fullscreenchange", moveOverlaysIntoFullscreenTarget);
       document.addEventListener("webkitfullscreenchange", moveOverlaysIntoFullscreenTarget);
 
       // Sblocca audio su iOS Safari / Chrome al primo gesto utente
-      const unlockAudioOnGesture = () => {
-        audioEngine.init();
-      };
+      const unlockAudioOnGesture = () => audioEngine.init();
       ["touchstart", "touchend", "pointerdown", "mousedown", "keydown"].forEach((evtName) => {
         window.addEventListener(evtName, unlockAudioOnGesture, { passive: true });
       });
@@ -2005,14 +2957,9 @@
           const isFs = document.fullscreenElement || document.webkitFullscreenElement;
           try {
             if (!isFs) {
-              if (docEl.requestFullscreen) {
-                await docEl.requestFullscreen();
-              } else if (docEl.webkitRequestFullscreen) {
-                await docEl.webkitRequestFullscreen();
-              } else {
-                document.body.classList.toggle("ios-pseudo-fullscreen");
-                window.scrollTo(0, 1);
-              }
+              if (docEl.requestFullscreen) await docEl.requestFullscreen();
+              else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen();
+              else { document.body.classList.toggle("ios-pseudo-fullscreen"); window.scrollTo(0, 1); }
             } else {
               if (document.exitFullscreen) await document.exitFullscreen();
               else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
@@ -2035,10 +2982,7 @@
           btn.classList.add("pressed");
         };
         const release = (evt) => {
-          if (evt) {
-            evt.preventDefault();
-            evt.stopPropagation();
-          }
+          if (evt) { evt.preventDefault(); evt.stopPropagation(); }
           virtualMoveState[directionKey] = false;
           btn.classList.remove("pressed");
         };
@@ -2052,83 +2996,56 @@
       bindVirtualMoveButton("btn-move-forward", "forward");
       bindVirtualMoveButton("btn-move-backward", "backward");
 
-      // Pulsanti opzioni 3D per Meta Quest 2
-      [0, 1, 2].forEach((i) => {
-        const bgEl = document.getElementById(`opt-bg-${i}`);
-        bgEl.addEventListener("click", (evt) => {
-          evt.stopPropagation();
-          submitAnswer(i);
-        });
-      });
-
-      document.getElementById("btn-close-bg").addEventListener("click", (evt) => {
-        evt.stopPropagation();
-        closeQuizPanel();
-      });
-
       document.getElementById("dt-btn-close").addEventListener("click", (evt) => {
         evt.stopPropagation();
         closeQuizPanel();
       });
 
+      // Tastiera: ESC chiude, 1/2/3 o A/B/C rispondono
       window.addEventListener("keydown", (evt) => {
-        if (evt.key === "Escape" && gameState.activeModuleIndex !== null) {
-          closeQuizPanel();
+        if (gameState.activeModuleIndex === null) return;
+        if (evt.key === "Escape") { closeQuizPanel(); return; }
+        const map = { "1": 0, "2": 1, "3": 2, a: 0, b: 1, c: 2, A: 0, B: 1, C: 2 };
+        if (evt.key in map && !isVRModeActive()) {
+          evt.preventDefault();
+          submitAnswer(map[evt.key]);
         }
       });
-
-      // Pulsante sul maxischermo dietro la serranda per tornare alla schermata iniziale
-      const screenNewMissionBtn = document.getElementById("btn-screen-new-mission");
-      if (screenNewMissionBtn) {
-        screenNewMissionBtn.addEventListener("click", (evt) => {
-          evt.stopPropagation();
-          resetGame(true);
-        });
-      }
 
       // Tasto RIAVVIA nella barra superiore
-      const hudResetBtn = document.getElementById("btn-reset-hud");
-      if (hudResetBtn) {
-        hudResetBtn.addEventListener("click", (evt) => {
-          evt.preventDefault();
-          evt.stopPropagation();
-          resetGame(true);
-        });
-      }
-
-      // Pulsante INIZIA MISSIONE
-      const startBtn = document.getElementById("btn-start");
-      startBtn.addEventListener("click", async (evt) => {
+      document.getElementById("btn-reset-hud").addEventListener("click", (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
+        resetGame(true);
+      });
 
+      // Pulsante INIZIA MISSIONE
+      document.getElementById("btn-start").addEventListener("click", async (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
         audioEngine.init();
-        audioEngine.startMusic();
-        audioEngine.playSelect();
-
         if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-          try {
-            await DeviceOrientationEvent.requestPermission();
-          } catch (e) {}
+          try { await DeviceOrientationEvent.requestPermission(); } catch (e) {}
         }
-
-        document.getElementById("start-overlay").style.display = "none";
-        document.getElementById("pc-hud").style.display = "flex";
-        document.getElementById("mobile-move-controls").style.display = "flex";
-        document.getElementById("crosshair-hint").style.display = "block";
-        startMissionTimer();
-        showBitBotMessage("Benvenuto sull'astronave Pasolini! Trova i 10 nodi neon!");
+        beginMission();
       });
 
-      // Toggle Musica
-      const audioBtn = document.getElementById("btn-audio-toggle");
-      audioBtn.addEventListener("click", () => {
-        audioEngine.init();
-        audioEngine.startMusic();
-        const active = audioEngine.toggleMute();
-        audioBtn.textContent = active ? "🔊 MUSICA: ON" : "🔇 MUSICA: OFF";
-      });
+      // Toggle Audio
+      document.getElementById("btn-audio-toggle").addEventListener("click", toggleAudio);
     });
+
+    // Interfaccia per i test automatici e il debug
+    window.StarshipGame = {
+      gameState,
+      get activeQuestions() { return activeQuestions; },
+      openQuizForModule,
+      submitAnswer,
+      closeQuizPanel,
+      resetGame,
+      beginMission,
+      checkVictoryCondition,
+      ready: false
+    };
   </script>
 </body>
 </html>
